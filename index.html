@@ -3,202 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IT Partner Pro | Premium Business Suite</title>
+    <title>IT Partner Pro | Ultimate Business Suite</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #0f172a; --accent: #38bdf8; --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --success: #10b981; --danger: #ef4444; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text); padding-bottom: 90px; }
-
-        #setupOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; color: white; }
-        .setup-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 30px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.2); width: 100%; max-width: 400px; }
+        :root { --primary: #0f172a; --accent: #38bdf8; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --success: #10b981; --danger: #ef4444; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 90px; overflow-x: hidden; }
+        
+        /* Setup Overlay */
+        #setupOverlay { position: fixed; inset: 0; background: #0f172a; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; color: white; }
+        .setup-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 400px; }
         
         header { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-        .container { padding: 15px; max-width: 650px; margin: 0 auto; }
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
         
-        .page-section { display: none; animation: fadeIn 0.3s ease; }
+        .page-section { display: none; animation: fadeIn 0.3s; }
         .active-page { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .glass-card { background: var(--card); border-radius: 15px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid #eef2f6; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .mini-stat { background: #fff; padding: 15px; border-radius: 12px; text-align: center; border-bottom: 3px solid var(--accent); }
+        .mini-stat p { font-size: 1.2rem; font-weight: 800; margin-top: 5px; }
 
-        .glass-card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .stat-item { background: white; padding: 15px; border-radius: 18px; text-align: center; border-bottom: 4px solid var(--accent); }
-
-        .q-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
-        .q-table th { background: #f8fafc; padding: 10px; border: 1px solid #e2e8f0; text-align: left; }
-        .q-table td { border: 1px solid #e2e8f0; padding: 0; }
-        .q-table input { width: 100%; padding: 10px; border: none; outline: none; background: transparent; }
-
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: #64748b; }
-        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 0.9rem; }
-
-        .btn-premium { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: white; width: 100%; padding: 16px; border: none; border-radius: 16px; font-weight: 700; cursor: pointer; }
-
-        .bottom-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; background: var(--primary); display: flex; justify-content: space-around; padding: 12px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); z-index: 1500; }
-        .nav-item { color: rgba(255,255,255,0.4); text-align: center; cursor: pointer; font-size: 0.7rem; flex: 1; }
-        .nav-item.active { color: var(--accent); }
-
-        /* Client Profile Modal */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; display: none; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 24px; padding: 25px; position: relative; max-height: 90vh; overflow-y: auto; }
-
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
-        .status-Pending { background: #fef3c7; color: #d97706; }
-        .status-Completed { background: #dcfce7; color: #166534; }
-        .status-Canceled { background: #fee2e2; color: #991b1b; }
+        /* Excel-like Table Styling */
+        .excel-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85rem; }
+        .excel-table th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; text-align: left; }
+        .excel-table td { border: 1px solid #e2e8f0; padding: 0; }
+        .excel-table input { width: 100%; padding: 10px; border: none; outline: none; background: transparent; }
+        
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 4px; color: #64748b; }
+        .input-group input, .input-group textarea { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; }
+        
+        .btn-premium { background: var(--primary); color: white; width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
+        
+        /* Modal for Client Profile */
+        #profileModal { position: fixed; inset: 0; background: white; z-index: 5000; display: none; padding: 20px; overflow-y: auto; }
+        
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid #e2e8f0; z-index: 1000; }
+        .nav-item { color: #94a3b8; text-align: center; cursor: pointer; font-size: 0.7rem; font-weight: 600; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 1.3rem; display: block; margin-bottom: 3px; }
     </style>
 </head>
 <body>
-
     <div id="setupOverlay">
-        <h1 style="font-size: 2rem; color: var(--accent);">IT Partner Pro</h1>
+        <h1 style="color: var(--accent); margin-bottom: 10px;">IT PARTNER PRO</h1>
         <div class="setup-card">
-            <h3 style="margin-bottom:15px; text-align:center;">Setup Business</h3>
-            <div class="input-group"><label>Admin Name</label><input type="text" id="setAdminName"></div>
-            <div class="input-group"><label>Shop Name</label><input type="text" id="setShopName"></div>
-            <div class="input-group"><label>Phone</label><input type="tel" id="setPhone"></div>
-            <div class="input-group"><label>Logo</label><input type="file" id="setLogo" accept="image/*"></div>
-            <button class="btn-premium" onclick="saveProfile()">Start Now</button>
+            <div class="input-group"><label style="color:#fff">Admin Name</label><input type="text" id="setAdminName"></div>
+            <div class="input-group"><label style="color:#fff">Shop Name</label><input type="text" id="setShopName"></div>
+            <div class="input-group"><label style="color:#fff">Phone</label><input type="tel" id="setPhone"></div>
+            <div class="input-group"><label style="color:#fff">Business Logo</label><input type="file" id="setLogo" accept="image/*"></div>
+            <button class="btn-premium" style="background:var(--accent); color:#000" onclick="saveProfile()">Setup Business</button>
         </div>
     </div>
 
-    <header>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <img id="headerLogo" src="" style="height:32px; width:32px; border-radius: 6px; background: #fff;">
-            <div id="headerShopName" style="font-weight: 800; font-size: 1rem;">IT PARTNER</div>
+    <div id="profileModal">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 id="modalClientName">Client Profile</h2>
+            <button onclick="closeProfile()" style="padding:10px; border:none; background:#eee; border-radius:50%;"><i class="fas fa-times"></i></button>
         </div>
+        <div id="profileContent"></div>
+    </div>
+
+    <header>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <img id="headerLogo" src="" style="height:32px; width:32px; display:none; border-radius:5px;">
+            <span id="headerShopName" style="font-weight:800;">IT PARTNER</span>
+        </div>
+        <i class="fas fa-sync" onclick="location.reload()" style="opacity:0.5"></i>
     </header>
 
     <div class="container">
-        
         <div id="homePage" class="page-section active-page">
+            <h4 style="color:#64748b; margin-bottom:12px;">FULL ANALYSIS</h4>
             <div class="stat-grid">
-                <div class="stat-item"><span>CASH IN</span><p id="statCash" style="color:var(--success); font-weight: 900;">0৳</p></div>
-                <div class="stat-item"><span>TOTAL DUE</span><p id="statDue" style="color:var(--danger); font-weight: 900;">0৳</p></div>
+                <div class="mini-stat"><span>Today Cash</span><p id="tCash" style="color:var(--success)">0৳</p></div>
+                <div class="mini-stat"><span>Today Due</span><p id="tDue" style="color:var(--danger)">0৳</p></div>
             </div>
+            <div class="stat-grid">
+                <div class="mini-stat"><span>30D Profit</span><p id="mCash">0৳</p></div>
+                <div class="mini-stat"><span>30D Due</span><p id="mDue" style="color:var(--danger)">0৳</p></div>
+            </div>
+            <div class="glass-card"><canvas id="profitChart" style="width:100%; height:180px;"></canvas></div>
             <div class="glass-card">
-                <h3>Welcome, <span id="welcomeName">Admin</span></h3>
-                <p style="color:gray; font-size:0.8rem; margin-top:5px;">Manage your business smartly from the bottom navigation.</p>
+                <div class="stat-grid">
+                    <div class="input-group"><label>From</label><input type="date" id="anaFrom"></div>
+                    <div class="input-group"><label>To</label><input type="date" id="anaTo"></div>
+                </div>
+                <button class="btn-premium" onclick="runAnalysis()">Search Report</button>
+                <div id="anaResult" style="display:none; margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+                    <p>Total Cash: <strong id="resCash">0</strong>৳</p>
+                    <p>Total Due: <strong id="resDue">0</strong>৳</p>
+                </div>
             </div>
         </div>
 
         <div id="quotePage" class="page-section">
-            <h2 style="margin-bottom:15px;">Quotation Maker</h2>
             <div class="glass-card">
-                <div class="input-group"><label>Customer Name</label><input type="text" id="qName" placeholder="Name"></div>
-                <table class="q-table" id="quoteTable">
-                    <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
-                    <tbody id="qBody">
-                        <tr><td><input type="text" class="q-desc"></td><td><input type="number" class="q-qty" value="1" oninput="calcQuote()"></td><td><input type="number" class="q-prc" value="0" oninput="calcQuote()"></td><td><input type="number" class="q-total" value="0" readonly></td></tr>
-                    </tbody>
-                </table>
-                <button onclick="addRow()" style="width:100%; margin-top:10px; padding:10px; border:1px dashed #ccc; background:none;">+ Add Item</button>
-                <div style="margin-top:15px; text-align:right;"><h3>Grand Total: <span id="qGrandTotal">0</span>৳</h3></div><br>
-                <button class="btn-premium" onclick="generateQuotePDF()">Download PDF</button>
+                <div class="stat-grid">
+                    <div class="input-group"><label>Customer Name</label><input type="text" id="qName"></div>
+                    <div class="input-group"><label>Mobile</label><input type="tel" id="qPhone"></div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="excel-table"><tbody id="qBody">
+                        <tr><td><input type="text" class="q-desc" placeholder="Item Name"></td><td><input type="number" class="q-qty" value="1" oninput="calcQuote()"></td><td><input type="number" class="q-prc" value="0" oninput="calcQuote()"></td><td><input type="number" class="q-total" value="0" readonly></td></tr>
+                    </tbody></table>
+                </div>
+                <button onclick="addRow('qBody')" style="width:100%; margin:10px 0; border:1px dashed #ccc; padding:10px; border-radius:10px;">+ Add Item</button>
+                <h3 style="text-align:right;">Total: <span id="qGrandTotal">0</span>৳</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-top:15px;">
+                    <button class="btn-premium" onclick="generateQuotePDF()">PDF</button>
+                    <button class="btn-premium" style="background:var(--success)" onclick="convertToJob()">To Job</button>
+                    <button class="btn-premium" style="background:var(--danger)" onclick="clearSheet('qBody')">Clear</button>
+                </div>
             </div>
         </div>
 
         <div id="addClientPage" class="page-section">
-            <h2 style="margin-bottom:15px;">Add New Job</h2>
             <div class="glass-card">
-                <div class="input-group"><label>Client Name</label><input type="text" id="cName"></div>
-                <div class="input-group"><label>Phone Number</label><input type="tel" id="cPhone"></div>
-                <div class="input-group"><label>Address</label><input type="text" id="cAddress"></div>
-                <div class="input-group"><label>Service Date</label><input type="date" id="cDate"></div>
-                <div class="input-group"><label>Requirements</label><textarea id="cReq" rows="3"></textarea></div>
                 <div class="stat-grid">
-                    <div class="input-group"><label>Total Bill</label><input type="number" id="cBill"></div>
-                    <div class="input-group"><label>Advance Payment</label><input type="number" id="cRec"></div>
+                    <div class="input-group"><label>Client Name</label><input type="text" id="cName"></div>
+                    <div class="input-group"><label>Mobile</label><input type="tel" id="cPhone"></div>
                 </div>
-                <button class="btn-premium" onclick="saveClient()" style="background:var(--primary)">Add to Ledger</button>
+                <div class="input-group"><label>Full Address</label><input type="text" id="cAddress" placeholder="কাস্টমারের ঠিকানা"></div>
+                <div class="stat-grid">
+                    <div class="input-group"><label>Entry Date</label><input type="date" id="cDate"></div>
+                    <div class="input-group"><label>Delivery Date</label><input type="date" id="dDate"></div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="excel-table"><tbody id="jBody">
+                        <tr><td><input type="text" class="j-desc" placeholder="Details"></td><td><input type="number" class="j-qty" value="1" oninput="calcJobBill()"></td><td><input type="number" class="j-prc" value="0" oninput="calcJobBill()"></td><td><input type="number" class="j-total" value="0" readonly></td></tr>
+                    </tbody></table>
+                </div>
+                <button onclick="addRow('jBody')" style="width:100%; margin:10px 0; border:1px dashed #ccc; padding:10px; border-radius:10px;">+ Add Requirement</button>
+                <div class="stat-grid">
+                    <div class="input-group"><label>Total Bill</label><input type="number" id="cBill" readonly></div>
+                    <div class="input-group"><label>Received Cash</label><input type="number" id="cRec" value="0"></div>
+                </div>
+                <button class="btn-premium" onclick="saveClient()">Save to Ledger</button>
             </div>
         </div>
 
-        <div id="listPage" class="page-section">
-            <h2 style="margin-bottom:15px;">Client Ledger</h2>
-            <div id="clientList"></div>
-        </div>
+        <div id="listPage" class="page-section"><div id="clientList"></div></div>
     </div>
 
-    <div id="profileModal" class="modal">
-        <div class="modal-content">
-            <button onclick="closeModal()" style="position:absolute; right:20px; top:20px; border:none; background:none; font-size:1.5rem;">&times;</button>
-            <h2 id="mName">Client Name</h2>
-            <p id="mPhone" style="color:var(--accent); font-weight:700;"></p>
-            <hr style="margin:15px 0; opacity:0.1;">
-            
-            <p><strong>Address:</strong> <span id="mAddress"></span></p>
-            <p><strong>Work Date:</strong> <span id="mDate"></span></p>
-            <p><strong>Requirements:</strong> <span id="mReq"></span></p>
-            <br>
-            <div class="stat-grid">
-                <div class="stat-item" style="border-bottom-color:var(--primary);"><span>Total Bill</span><p id="mBill">0</p></div>
-                <div class="stat-item" style="border-bottom-color:var(--danger);"><span>Due</span><p id="mDue">0</p></div>
-            </div>
-
-            <div class="input-group">
-                <label>Add Payment (৳)</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="number" id="updateRecInput" placeholder="Amount">
-                    <button onclick="updatePayment()" style="background:var(--success); color:white; border:none; padding:10px 20px; border-radius:12px;">Add</button>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Work Status</label>
-                <select id="mStatus" onchange="updateStatus()">
-                    <option value="Pending">Pending</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Canceled">Canceled</option>
-                </select>
-            </div>
-            <button class="btn-premium" onclick="deleteClientFromModal()" style="background:var(--danger); margin-top:10px;">Delete Record</button>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="navTo('homePage', this)"><i class="fas fa-home"></i>Home</div>
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="navTo('homePage', this)"><i class="fas fa-chart-line"></i>Dash</div>
         <div class="nav-item" onclick="navTo('quotePage', this)"><i class="fas fa-file-invoice"></i>Quote</div>
-        <div class="nav-item" onclick="navTo('addClientPage', this)"><i class="fas fa-plus-circle"></i>Job</div>
-        <div class="nav-item" onclick="navTo('listPage', this)"><i class="fas fa-users"></i>Ledger</div>
-    </div>
-
-<script>
-    let clients = [];
-    let adminProfile = null;
-    let selectedClientId = null;
+        <div class="nav-item" onclick="navTo('addClientPage', this)"><i class="fas fa-briefcase"></i>Job</div>
+        <div class="nav-item" onclick="navTo('listPage', this)"><i class="fas fa-users"></i>Clients</div>
+    </nav>
+    <script>
+    let clients = []; let adminProfile = null; let myChart = null;
+    const { jsPDF } = window.jspdf;
 
     window.onload = function() {
         const saved = localStorage.getItem('it_admin_profile');
         if(!saved) document.getElementById('setupOverlay').style.display = 'flex';
-        else { adminProfile = JSON.parse(saved); updateUI(); }
-        if(localStorage.getItem('it_partner_clients')) clients = JSON.parse(localStorage.getItem('it_partner_clients'));
-        updateSummary();
+        else { adminProfile = JSON.parse(saved); updateHeader(); }
+        
+        clients = JSON.parse(localStorage.getItem('it_partner_clients')) || [];
+        initChart(); updateDashboard();
     };
 
     function saveProfile() {
         const name = document.getElementById('setAdminName').value;
         const shop = document.getElementById('setShopName').value;
-        const fileInput = document.getElementById('setLogo');
-        if(!name || !shop) return alert("Fill Name and Shop Name!");
+        const file = document.getElementById('setLogo').files[0];
+        if(!name || !shop) return alert("All fields required!");
+        
         const reader = new FileReader();
         reader.onload = (e) => {
             adminProfile = { name, shop, phone: document.getElementById('setPhone').value, logo: e.target.result };
             localStorage.setItem('it_admin_profile', JSON.stringify(adminProfile));
-            document.getElementById('setupOverlay').style.display = 'none';
-            updateUI();
+            location.reload();
         };
-        if(fileInput.files[0]) reader.readAsDataURL(fileInput.files[0]);
-        else { adminProfile = { name, shop, phone: document.getElementById('setPhone').value, logo: '' }; localStorage.setItem('it_admin_profile', JSON.stringify(adminProfile)); document.getElementById('setupOverlay').style.display = 'none'; updateUI(); }
+        if(file) reader.readAsDataURL(file);
+        else { adminProfile = { name, shop, phone: document.getElementById('setPhone').value, logo: '' }; localStorage.setItem('it_admin_profile', JSON.stringify(adminProfile)); location.reload(); }
     }
 
-    function updateUI() {
-        document.getElementById('headerShopName').innerText = adminProfile.shop.toUpperCase();
-        document.getElementById('welcomeName').innerText = adminProfile.name;
-        if(adminProfile.logo) document.getElementById('headerLogo').src = adminProfile.logo;
+    function updateHeader() {
+        document.getElementById('headerShopName').innerText = adminProfile.shop;
+        if(adminProfile.logo) { document.getElementById('headerLogo').src = adminProfile.logo; document.getElementById('headerLogo').style.display = 'block'; }
     }
 
     function navTo(id, el) {
@@ -206,103 +197,117 @@
         document.getElementById(id).classList.add('active-page');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         el.classList.add('active');
+        if(id === 'homePage') updateDashboard();
         if(id === 'listPage') renderClients();
     }
 
-    // QUOTE LOGIC
-    function addRow() { document.getElementById('qBody').insertAdjacentHTML('beforeend', `<tr><td><input type="text" class="q-desc"></td><td><input type="number" class="q-qty" value="1" oninput="calcQuote()"></td><td><input type="number" class="q-prc" value="0" oninput="calcQuote()"></td><td><input type="number" class="q-total" value="0" readonly></td></tr>`); }
-    function calcQuote() {
-        let grand = 0;
-        document.querySelectorAll('#qBody tr').forEach(row => {
-            let q = parseFloat(row.querySelector('.q-qty').value) || 0;
-            let p = parseFloat(row.querySelector('.q-prc').value) || 0;
-            row.querySelector('.q-total').value = q * p;
-            grand += (q * p);
-        });
-        document.getElementById('qGrandTotal').innerText = grand;
+    function addRow(id) {
+        const p = id === 'qBody' ? 'q' : 'j';
+        const f = id === 'qBody' ? 'calcQuote()' : 'calcJobBill()';
+        document.getElementById(id).insertAdjacentHTML('beforeend', `<tr><td><input type="text" class="${p}-desc"></td><td><input type="number" class="${p}-qty" value="1" oninput="${f}"></td><td><input type="number" class="${p}-prc" value="0" oninput="${f}"></td><td><input type="number" class="${p}-total" value="0" readonly></td></tr>`);
     }
 
-    function generateQuotePDF() {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF();
-        doc.setFillColor(15, 23, 42); doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.text(adminProfile.shop, 20, 25);
-        doc.setTextColor(0,0,0); doc.setFontSize(14); doc.text("QUOTATION FOR: " + document.getElementById('qName').value, 20, 55);
-        let rows = []; document.querySelectorAll('#qBody tr').forEach(tr => { rows.push([tr.querySelector('.q-desc').value, tr.querySelector('.q-qty').value, tr.querySelector('.q-prc').value, tr.querySelector('.q-total').value]); });
-        doc.autoTable({ startY: 65, head: [['Item', 'Qty', 'Price', 'Total']], body: rows });
-        doc.text("Grand Total: " + document.getElementById('qGrandTotal').innerText + " BDT", 140, doc.lastAutoTable.finalY + 10);
-        doc.save(`Quote_${document.getElementById('qName').value}.pdf`);
-    }
+    function calcQuote() { let g = 0; document.querySelectorAll('#qBody tr').forEach(r => { let t = (r.querySelector('.q-qty').value || 0) * (r.querySelector('.q-prc').value || 0); r.querySelector('.q-total').value = t; g += t; }); document.getElementById('qGrandTotal').innerText = g; }
+    function calcJobBill() { let g = 0; document.querySelectorAll('#jBody tr').forEach(r => { let t = (r.querySelector('.j-qty').value || 0) * (r.querySelector('.j-prc').value || 0); r.querySelector('.j-total').value = t; g += t; }); document.getElementById('cBill').value = g; }
 
-    // JOB LOGIC
     function saveClient() {
-        const name = document.getElementById('cName').value;
         const bill = parseFloat(document.getElementById('cBill').value) || 0;
-        const rec = parseFloat(document.getElementById('cRec').value) || 0;
-        if(!name) return alert("Client Name is required!");
-        clients.push({ id: Date.now(), name, phone: document.getElementById('cPhone').value, address: document.getElementById('cAddress').value, date: document.getElementById('cDate').value, req: document.getElementById('cReq').value, bill, rec, due: bill-rec, status: 'Pending' });
+        const name = document.getElementById('cName').value;
+        if(!name || bill <= 0) return alert("Fill Name and Bill!");
+        
+        let items = [];
+        document.querySelectorAll('#jBody tr').forEach(r => {
+            if(r.querySelector('.j-desc').value) items.push({ desc: r.querySelector('.j-desc').value, qty: r.querySelector('.j-qty').value, prc: r.querySelector('.j-prc').value, total: r.querySelector('.j-total').value });
+        });
+
+        clients.push({ id: Date.now(), name, phone: document.getElementById('cPhone').value, address: document.getElementById('cAddress').value, bill, rec: parseFloat(document.getElementById('cRec').value) || 0, due: bill - (parseFloat(document.getElementById('cRec').value) || 0), date: document.getElementById('cDate').value || new Date().toISOString().split('T')[0], delivery: document.getElementById('dDate').value, items });
         localStorage.setItem('it_partner_clients', JSON.stringify(clients));
-        alert("Job Saved!"); updateSummary(); navTo('listPage', document.querySelectorAll('.nav-item')[3]);
+        alert("Client Data Saved!"); navTo('homePage', document.querySelectorAll('.nav-item')[0]);
     }
 
     function renderClients() {
         const list = document.getElementById('clientList'); list.innerHTML = "";
-        clients.forEach(c => {
-            list.innerHTML += `<div class="client-item glass-card" onclick="openProfile(${c.id})" style="display:flex; justify-content:space-between; cursor:pointer; padding:15px;">
-                <div><strong>${c.name}</strong><br><small style="color:gray;">${c.date}</small></div>
-                <div><span class="status-badge status-${c.status}">${c.status}</span><br><strong style="color:var(--danger)">${c.due}৳</strong></div>
+        clients.slice().reverse().forEach(c => {
+            list.innerHTML += `<div class="glass-card" onclick="openProfile(${c.id})" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                <div><strong>${c.name}</strong><br><small>${c.date}</small></div>
+                <div style="text-align:right;"><span style="color:var(--success)">${c.rec}৳</span><br><span style="color:var(--danger); font-size:0.7rem;">${c.due}৳ Due</span></div>
             </div>`;
         });
     }
 
     function openProfile(id) {
-        selectedClientId = id;
         const c = clients.find(x => x.id === id);
-        document.getElementById('mName').innerText = c.name;
-        document.getElementById('mPhone').innerText = c.phone;
-        document.getElementById('mAddress').innerText = c.address;
-        document.getElementById('mDate').innerText = c.date;
-        document.getElementById('mReq').innerText = c.req;
-        document.getElementById('mBill').innerText = c.bill + "৳";
-        document.getElementById('mDue').innerText = c.due + "৳";
-        document.getElementById('mStatus').value = c.status;
-        document.getElementById('profileModal').style.display = 'flex';
+        document.getElementById('modalClientName').innerText = c.name;
+        let itemRows = c.items.map(i => `<tr><td>${i.desc}</td><td>${i.qty}</td><td>${i.prc}৳</td><td>${i.total}৳</td></tr>`).join('');
+        document.getElementById('profileContent').innerHTML = `
+            <div class="glass-card">
+                <p><strong>Phone:</strong> ${c.phone}</p>
+                <p><strong>Address:</strong> ${c.address || 'N/A'}</p>
+                <p><strong>Delivery Date:</strong> ${c.delivery || 'Not Fixed'}</p>
+            </div>
+            <table class="excel-table"><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${itemRows}</tbody></table>
+            <div style="margin-top:20px;">
+                <p>Total Bill: ${c.bill}৳</p>
+                <p>Total Paid: ${c.rec}৳</p>
+                <p style="color:red">Current Due: ${c.due}৳</p>
+            </div>`;
+        document.getElementById('profileModal').style.display = 'block';
     }
 
-    function closeModal() { document.getElementById('profileModal').style.display = 'none'; }
+    function closeProfile() { document.getElementById('profileModal').style.display = 'none'; }
 
-    function updatePayment() {
-        const amt = parseFloat(document.getElementById('updateRecInput').value) || 0;
-        const c = clients.find(x => x.id === selectedClientId);
-        c.rec += amt; c.due = c.bill - c.rec;
-        saveAndRefresh();
-        document.getElementById('updateRecInput').value = "";
+    function generateQuotePDF() {
+        const doc = new jsPDF();
+        if(adminProfile.logo) doc.addImage(adminProfile.logo, 'PNG', 15, 10, 25, 25);
+        doc.setFontSize(22); doc.text(adminProfile.shop, 45, 20);
+        doc.setFontSize(10); doc.text(`Phone: ${adminProfile.phone} | Date: ${new Date().toLocaleDateString()}`, 45, 26);
+        doc.line(15, 38, 195, 38);
+        doc.text(`Customer: ${document.getElementById('qName').value}`, 15, 48);
+        doc.text(`Contact: ${document.getElementById('qPhone').value}`, 15, 54);
+        let data = [];
+        document.querySelectorAll('#qBody tr').forEach(r => { if(r.querySelector('.q-desc').value) data.push([r.querySelector('.q-desc').value, r.querySelector('.q-qty').value, r.querySelector('.q-prc').value + "৳", r.querySelector('.q-total').value + "৳"]); });
+        doc.autoTable({ head: [['Description', 'Qty', 'Unit Price', 'Total']], body: data, startY: 60 });
+        doc.text(`Total Amount: ${document.getElementById('qGrandTotal').innerText} Taka`, 15, doc.lastAutoTable.finalY + 15);
+        doc.text("__________________________", 140, doc.lastAutoTable.finalY + 35);
+        doc.text("Authorized Signature", 145, doc.lastAutoTable.finalY + 40);
+        doc.save(`Quote_${Date.now()}.pdf`);
     }
 
-    function updateStatus() {
-        const c = clients.find(x => x.id === selectedClientId);
-        c.status = document.getElementById('mStatus').value;
-        saveAndRefresh();
+    function initChart() {
+        const ctx = document.getElementById('profitChart').getContext('2d');
+        myChart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [{ label: 'Cash', data: [], borderColor: '#38bdf8', tension: 0.4, fill: true, backgroundColor: 'rgba(56, 189, 248, 0.1)' }] }, options: { plugins: { legend: { display: false } } } });
     }
 
-    function deleteClientFromModal() {
-        if(confirm("Delete this client record?")) {
-            clients = clients.filter(x => x.id !== selectedClientId);
-            closeModal();
-            saveAndRefresh();
-        }
+    function updateDashboard() {
+        const today = new Date().toISOString().split('T')[0];
+        let tc = 0, td = 0, mc = 0, md = 0;
+        clients.forEach(c => {
+            if(c.date === today) { tc += c.rec; td += c.due; }
+            mc += c.rec; md += c.due;
+        });
+        document.getElementById('tCash').innerText = tc + "৳"; document.getElementById('tDue').innerText = td + "৳";
+        document.getElementById('mCash').innerText = mc + "৳"; document.getElementById('mDue').innerText = md + "৳";
+        let lbls = []; let vals = []; for(let i=6; i>=0; i--) { let d = new Date(); d.setDate(d.getDate()-i); let ds = d.toISOString().split('T')[0]; lbls.push(ds.split('-')[2]); let s = 0; clients.filter(c => c.date === ds).forEach(c => s += c.rec); vals.push(s); }
+        myChart.data.labels = lbls; myChart.data.datasets[0].data = vals; myChart.update();
     }
 
-    function saveAndRefresh() {
-        localStorage.setItem('it_partner_clients', JSON.stringify(clients));
-        updateSummary(); renderClients();
-        if(selectedClientId) openProfile(selectedClientId);
+    function runAnalysis() {
+        const f = document.getElementById('anaFrom').value; const t = document.getElementById('anaTo').value;
+        if(!f || !t) return alert("Select Dates!");
+        let sc = 0, sd = 0; clients.forEach(c => { if(c.date >= f && c.date <= t) { sc += c.rec; sd += c.due; } });
+        document.getElementById('resCash').innerText = sc; document.getElementById('resDue').innerText = sd;
+        document.getElementById('anaResult').style.display = 'block';
     }
 
-    function updateSummary() {
-        let r = 0, d = 0; clients.forEach(c => { r += c.rec; d += c.due; });
-        document.getElementById('statCash').innerText = r + "৳";
-        document.getElementById('statDue').innerText = d + "৳";
+    function convertToJob() {
+        document.getElementById('cName').value = document.getElementById('qName').value;
+        document.getElementById('cPhone').value = document.getElementById('qPhone').value;
+        const jb = document.getElementById('jBody'); jb.innerHTML = "";
+        document.querySelectorAll('#qBody tr').forEach(tr => { let d = tr.querySelector('.q-desc').value; if(d) jb.insertAdjacentHTML('beforeend', `<tr><td><input type="text" class="j-desc" value="${d}"></td><td><input type="number" class="j-qty" value="${tr.querySelector('.q-qty').value}" oninput="calcJobBill()"></td><td><input type="number" class="j-prc" value="${tr.querySelector('.q-prc').value}" oninput="calcJobBill()"></td><td><input type="number" class="j-total" value="${tr.querySelector('.q-total').value}" readonly></td></tr>`); });
+        calcJobBill(); navTo('addClientPage', document.querySelectorAll('.nav-item')[2]);
     }
+
+    function clearSheet(id) { document.getElementById(id).innerHTML = '<tr><td><input type="text" class="q-desc" placeholder="Item Name"></td><td><input type="number" class="q-qty" value="1" oninput="calcQuote()"></td><td><input type="number" class="q-prc" value="0" oninput="calcQuote()"></td><td><input type="number" class="q-total" value="0" readonly></td></tr>'; if(id === 'qBody') calcQuote(); else calcJobBill(); }
 </script>
 </body>
-                                                                           </html>
+</html>
