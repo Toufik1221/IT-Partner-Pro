@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Partner Pro | Premium Business Suite</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --primary: #0f172a; --accent: #38bdf8; --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --success: #10b981; --danger: #ef4444; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 90px; }
+
+        #setupOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; color: white; }
+        .setup-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 30px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.2); width: 100%; max-width: 400px; }
+        
+        header { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .container { padding: 15px; max-width: 650px; margin: 0 auto; }
+        
+        .page-section { display: none; animation: fadeIn 0.3s ease; }
+        .active-page { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .glass-card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-item { background: white; padding: 15px; border-radius: 18px; text-align: center; border-bottom: 4px solid var(--accent); }
+
+        .q-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        .q-table th { background: #f8fafc; padding: 10px; border: 1px solid #e2e8f0; text-align: left; }
+        .q-table td { border: 1px solid #e2e8f0; padding: 0; }
+        .q-table input { width: 100%; padding: 10px; border: none; outline: none; background: transparent; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: #64748b; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 0.9rem; }
+
+        .btn-premium { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: white; width: 100%; padding: 16px; border: none; border-radius: 16px; font-weight: 700; cursor: pointer; }
+
+        .bottom-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; background: var(--primary); display: flex; justify-content: space-around; padding: 12px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); z-index: 1500; }
+        .nav-item { color: rgba(255,255,255,0.4); text-align: center; cursor: pointer; font-size: 0.7rem; flex: 1; }
+        .nav-item.active { color: var(--accent); }
+
+        /* Client Profile Modal */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; display: none; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 24px; padding: 25px; position: relative; max-height: 90vh; overflow-y: auto; }
+
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+        .status-Pending { background: #fef3c7; color: #d97706; }
+        .status-Completed { background: #dcfce7; color: #166534; }
+        .status-Canceled { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <div id="setupOverlay">
+        <h1 style="font-size: 2rem; color: var(--accent);">IT Partner Pro</h1>
+        <div class="setup-card">
+            <h3 style="margin-bottom:15px; text-align:center;">Setup Business</h3>
+            <div class="input-group"><label>Admin Name</label><input type="text" id="setAdminName"></div>
+            <div class="input-group"><label>Shop Name</label><input type="text" id="setShopName"></div>
+            <div class="input-group"><label>Phone</label><input type="tel" id="setPhone"></div>
+            <div class="input-group"><label>Logo</label><input type="file" id="setLogo" accept="image/*"></div>
+            <button class="btn-premium" onclick="saveProfile()">Start Now</button>
+        </div>
+    </div>
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img id="headerLogo" src="" style="height:32px; width:32px; border-radius: 6px; background: #fff;">
+            <div id="headerShopName" style="font-weight: 800; font-size: 1rem;">IT PARTNER</div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <div id="homePage" class="page-section active-page">
+            <div class="stat-grid">
+                <div class="stat-item"><span>CASH IN</span><p id="statCash" style="color:var(--success); font-weight: 900;">0৳</p></div>
+                <div class="stat-item"><span>TOTAL DUE</span><p id="statDue" style="color:var(--danger); font-weight: 900;">0৳</p></div>
+            </div>
+            <div class="glass-card">
+                <h3>Welcome, <span id="welcomeName">Admin</span></h3>
+                <p style="color:gray; font-size:0.8rem; margin-top:5px;">Manage your business smartly from the bottom navigation.</p>
+            </div>
+        </div>
+
+        <div id="quotePage" class="page-section">
+            <h2 style="margin-bottom:15px;">Quotation Maker</h2>
+            <div class="glass-card">
+                <div class="input-group"><label>Customer Name</label><input type="text" id="qName" placeholder="Name"></div>
+                <table class="q-table" id="quoteTable">
+                    <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+                    <tbody id="qBody">
+                        <tr><td><input type="text" class="q-desc"></td><td><input type="number" class="q-qty" value="1" oninput="calcQuote()"></td><td><input type="number" class="q-prc" value="0" oninput="calcQuote()"></td><td><input type="number" class="q-total" value="0" readonly></td></tr>
+                    </tbody>
+                </table>
+                <button onclick="addRow()" style="width:100%; margin-top:10px; padding:10px; border:1px dashed #ccc; background:none;">+ Add Item</button>
+                <div style="margin-top:15px; text-align:right;"><h3>Grand Total: <span id="qGrandTotal">0</span>৳</h3></div><br>
+                <button class="btn-premium" onclick="generateQuotePDF()">Download PDF</button>
+            </div>
+        </div>
+
+        <div id="addClientPage" class="page-section">
+            <h2 style="margin-bottom:15px;">Add New Job</h2>
+            <div class="glass-card">
+                <div class="input-group"><label>Client Name</label><input type="text" id="cName"></div>
+                <div class="input-group"><label>Phone Number</label><input type="tel" id="cPhone"></div>
+                <div class="input-group"><label>Address</label><input type="text" id="cAddress"></div>
+                <div class="input-group"><label>Service Date</label><input type="date" id="cDate"></div>
+                <div class="input-group"><label>Requirements</label><textarea id="cReq" rows="3"></textarea></div>
+                <div class="stat-grid">
+                    <div class="input-group"><label>Total Bill</label><input type="number" id="cBill"></div>
+                    <div class="input-group"><label>Advance Payment</label><input type="number" id="cRec"></div>
+                </div>
+                <button class="btn-premium" onclick="saveClient()" style="background:var(--primary)">Add to Ledger</button>
+            </div>
+        </div>
+
+        <div id="listPage" class="page-section">
+            <h2 style="margin-bottom:15px;">Client Ledger</h2>
+            <div id="clientList"></div>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <button onclick="closeModal()" style="position:absolute; right:20px; top:20px; border:none; background:none; font-size:1.5rem;">&times;</button>
+            <h2 id="mName">Client Name</h2>
+            <p id="mPhone" style="color:var(--accent); font-weight:700;"></p>
+            <hr style="margin:15px 0; opacity:0.1;">
+            
+            <p><strong>Address:</strong> <span id="mAddress"></span></p>
+            <p><strong>Work Date:</strong> <span id="mDate"></span></p>
+            <p><strong>Requirements:</strong> <span id="mReq"></span></p>
+            <br>
+            <div class="stat-grid">
+                <div class="stat-item" style="border-bottom-color:var(--primary);"><span>Total Bill</span><p id="mBill">0</p></div>
+                <div class="stat-item" style="border-bottom-color:var(--danger);"><span>Due</span><p id="mDue">0</p></div>
+            </div>
+
+            <div class="input-group">
+                <label>Add Payment (৳)</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="number" id="updateRecInput" placeholder="Amount">
+                    <button onclick="updatePayment()" style="background:var(--success); color:white; border:none; padding:10px 20px; border-radius:12px;">Add</button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Work Status</label>
+                <select id="mStatus" onchange="updateStatus()">
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Canceled">Canceled</option>
+                </select>
+            </div>
+            <button class="btn-premium" onclick="deleteClientFromModal()" style="background:var(--danger); margin-top:10px;">Delete Record</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="navTo('homePage', this)"><i class="fas fa-home"></i>Home</div>
+        <div class="nav-item" onclick="navTo('quotePage', this)"><i class="fas fa-file-invoice"></i>Quote</div>
+        <div class="nav-item" onclick="navTo('addClientPage', this)"><i class="fas fa-plus-circle"></i>Job</div>
+        <div class="nav-item" onclick="navTo('listPage', this)"><i class="fas fa-users"></i>Ledger</div>
+    </div>
+
+<script>
+    let clients = [];
+    let adminProfile = null;
+    let selectedClientId = null;
+
+    window.onload = function() {
+        const saved = localStorage.getItem('it_admin_profile');
+        if(!saved) document.getElementById('setupOverlay').style.display = 'flex';
+        else { adminProfile = JSON.parse(saved); updateUI(); }
+        if(localStorage.getItem('it_partner_clients')) clients = JSON.parse(localStorage.getItem('it_partner_clients'));
+        updateSummary();
+    };
+
+    function saveProfile() {
+        const name = document.getElementById('setAdminName').value;
+        const shop = document.getElementById('setShopName').value;
+        const fileInput = document.getElementById('setLogo');
+        if(!name || !shop) return alert("Fill Name and Shop Name!");
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            adminProfile = { name, shop, phone: document.getElementById('setPhone').value, logo: e.target.result };
+            localStorage.setItem('it_admin_profile', JSON.stringify(adminProfile));
+            document.getElementById('setupOverlay').style.display = 'none';
+            updateUI();
+        };
+        if(fileInput.files[0]) reader.readAsDataURL(fileInput.files[0]);
+        else { adminProfile = { name, shop, phone: document.getElementById('setPhone').value, logo: '' }; localStorage.setItem('it_admin_profile', JSON.stringify(adminProfile)); document.getElementById('setupOverlay').style.display = 'none'; updateUI(); }
+    }
+
+    function updateUI() {
+        document.getElementById('headerShopName').innerText = adminProfile.shop.toUpperCase();
+        document.getElementById('welcomeName').innerText = adminProfile.name;
+        if(adminProfile.logo) document.getElementById('headerLogo').src = adminProfile.logo;
+    }
+
+    function navTo(id, el) {
+        document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active-page'));
+        document.getElementById(id).classList.add('active-page');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+        if(id === 'listPage') renderClients();
+    }
+
+    // QUOTE LOGIC
+    function addRow() { document.getElementById('qBody').insertAdjacentHTML('beforeend', `<tr><td><input type="text" class="q-desc"></td><td><input type="number" class="q-qty" value="1" oninput="calcQuote()"></td><td><input type="number" class="q-prc" value="0" oninput="calcQuote()"></td><td><input type="number" class="q-total" value="0" readonly></td></tr>`); }
+    function calcQuote() {
+        let grand = 0;
+        document.querySelectorAll('#qBody tr').forEach(row => {
+            let q = parseFloat(row.querySelector('.q-qty').value) || 0;
+            let p = parseFloat(row.querySelector('.q-prc').value) || 0;
+            row.querySelector('.q-total').value = q * p;
+            grand += (q * p);
+        });
+        document.getElementById('qGrandTotal').innerText = grand;
+    }
+
+    function generateQuotePDF() {
+        const { jsPDF } = window.jspdf; const doc = new jsPDF();
+        doc.setFillColor(15, 23, 42); doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.text(adminProfile.shop, 20, 25);
+        doc.setTextColor(0,0,0); doc.setFontSize(14); doc.text("QUOTATION FOR: " + document.getElementById('qName').value, 20, 55);
+        let rows = []; document.querySelectorAll('#qBody tr').forEach(tr => { rows.push([tr.querySelector('.q-desc').value, tr.querySelector('.q-qty').value, tr.querySelector('.q-prc').value, tr.querySelector('.q-total').value]); });
+        doc.autoTable({ startY: 65, head: [['Item', 'Qty', 'Price', 'Total']], body: rows });
+        doc.text("Grand Total: " + document.getElementById('qGrandTotal').innerText + " BDT", 140, doc.lastAutoTable.finalY + 10);
+        doc.save(`Quote_${document.getElementById('qName').value}.pdf`);
+    }
+
+    // JOB LOGIC
+    function saveClient() {
+        const name = document.getElementById('cName').value;
+        const bill = parseFloat(document.getElementById('cBill').value) || 0;
+        const rec = parseFloat(document.getElementById('cRec').value) || 0;
+        if(!name) return alert("Client Name is required!");
+        clients.push({ id: Date.now(), name, phone: document.getElementById('cPhone').value, address: document.getElementById('cAddress').value, date: document.getElementById('cDate').value, req: document.getElementById('cReq').value, bill, rec, due: bill-rec, status: 'Pending' });
+        localStorage.setItem('it_partner_clients', JSON.stringify(clients));
+        alert("Job Saved!"); updateSummary(); navTo('listPage', document.querySelectorAll('.nav-item')[3]);
+    }
+
+    function renderClients() {
+        const list = document.getElementById('clientList'); list.innerHTML = "";
+        clients.forEach(c => {
+            list.innerHTML += `<div class="client-item glass-card" onclick="openProfile(${c.id})" style="display:flex; justify-content:space-between; cursor:pointer; padding:15px;">
+                <div><strong>${c.name}</strong><br><small style="color:gray;">${c.date}</small></div>
+                <div><span class="status-badge status-${c.status}">${c.status}</span><br><strong style="color:var(--danger)">${c.due}৳</strong></div>
+            </div>`;
+        });
+    }
+
+    function openProfile(id) {
+        selectedClientId = id;
+        const c = clients.find(x => x.id === id);
+        document.getElementById('mName').innerText = c.name;
+        document.getElementById('mPhone').innerText = c.phone;
+        document.getElementById('mAddress').innerText = c.address;
+        document.getElementById('mDate').innerText = c.date;
+        document.getElementById('mReq').innerText = c.req;
+        document.getElementById('mBill').innerText = c.bill + "৳";
+        document.getElementById('mDue').innerText = c.due + "৳";
+        document.getElementById('mStatus').value = c.status;
+        document.getElementById('profileModal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('profileModal').style.display = 'none'; }
+
+    function updatePayment() {
+        const amt = parseFloat(document.getElementById('updateRecInput').value) || 0;
+        const c = clients.find(x => x.id === selectedClientId);
+        c.rec += amt; c.due = c.bill - c.rec;
+        saveAndRefresh();
+        document.getElementById('updateRecInput').value = "";
+    }
+
+    function updateStatus() {
+        const c = clients.find(x => x.id === selectedClientId);
+        c.status = document.getElementById('mStatus').value;
+        saveAndRefresh();
+    }
+
+    function deleteClientFromModal() {
+        if(confirm("Delete this client record?")) {
+            clients = clients.filter(x => x.id !== selectedClientId);
+            closeModal();
+            saveAndRefresh();
+        }
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem('it_partner_clients', JSON.stringify(clients));
+        updateSummary(); renderClients();
+        if(selectedClientId) openProfile(selectedClientId);
+    }
+
+    function updateSummary() {
+        let r = 0, d = 0; clients.forEach(c => { r += c.rec; d += c.due; });
+        document.getElementById('statCash').innerText = r + "৳";
+        document.getElementById('statDue').innerText = d + "৳";
+    }
+</script>
+</body>
+                                                                           </html>
