@@ -12,7 +12,6 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
         body { background: #e8f5e9; padding-bottom: 70px; }
-        /* Green Theme */
         .top-bar { background: #1b5e20; color: white; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .top-bar h2 { font-size: 1.3rem; font-weight: 600; }
         .top-bar i { font-size: 1.3rem; cursor: pointer; }
@@ -58,6 +57,8 @@
         .tab { flex: 1; text-align: center; padding: 8px; border-radius: 40px; cursor: pointer; font-size: 0.8rem; font-weight: 500; }
         .tab.active { background: #2e7d32; color: white; }
         .avatar-sm { width: 36px; height: 36px; background: #4caf50; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; }
+        .login-container { text-align: center; }
+        .login-container i { font-size: 48px; color: #2e7d32; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -72,7 +73,7 @@
 
 <div class="container" id="mainContainer">
     <!-- Dashboard -->
-    <div id="dashboardPage" class="page-section active-page">
+    <div id="dashboardPage" class="page-section">
         <div class="report-tabs">
             <div class="tab active" onclick="setReportType('daily',this)">Today</div>
             <div class="tab" onclick="setReportType('weekly',this)">Weekly</div>
@@ -156,7 +157,7 @@
 </div>
 
 <nav class="bottom-nav">
-    <div class="nav-item active" onclick="navigateTo('dashboardPage',this)"><i class="fas fa-chart-line"></i><span>Dash</span></div>
+    <div class="nav-item" onclick="navigateTo('dashboardPage',this)"><i class="fas fa-chart-line"></i><span>Dash</span></div>
     <div class="nav-item" onclick="navigateTo('quotePage',this)"><i class="fas fa-file-invoice-dollar"></i><span>Quote</span></div>
     <div class="nav-item" onclick="navigateTo('jobPage',this)"><i class="fas fa-briefcase"></i><span>Job</span></div>
     <div class="nav-item" onclick="navigateTo('clientsPage',this)"><i class="fas fa-address-book"></i><span>Ledger</span></div>
@@ -164,27 +165,30 @@
     <div class="nav-item" onclick="navigateTo('settingsPage',this)"><i class="fas fa-cog"></i><span>Settings</span></div>
 </nav>
 
-<!-- Login Modal - Password only, no default shown -->
+<!-- Login Modal - Password protected, no default password shown -->
 <div id="loginModal" class="modal-overlay" style="display:flex; align-items:center;">
-    <div class="modal-card">
-        <div class="modal-header"><h3>🔐 IT Partner Login</h3></div>
-        <div class="modal-body">
-            <input type="password" id="loginPass" placeholder="Enter Password">
-            <button class="btn-green" onclick="doLogin()">Login</button>
-            <div id="loginErr" style="color:red; margin-top:10px; font-size:12px;"></div>
+    <div class="modal-card" style="max-width: 380px;">
+        <div class="modal-header"><h3 style="color:#2e7d32;"><i class="fas fa-lock"></i> IT Partner Login</h3></div>
+        <div class="modal-body login-container">
+            <i class="fas fa-microchip"></i>
+            <p style="margin-bottom: 20px; color: #666;">Enter password to access the system</p>
+            <input type="password" id="loginPass" placeholder="Enter Password" style="text-align: center;">
+            <button class="btn-green" onclick="doLogin()">Unlock <i class="fas fa-arrow-right"></i></button>
+            <div id="loginErr" style="color:red; margin-top:15px; font-size:12px;"></div>
         </div>
     </div>
 </div>
 
 <script>
     // ===================== DATA =====================
+    // No demo data - completely empty database
     let appData = {
-        business: { name: "IT Partner", phone: "", email: "", address: "", prefix: "INV-" },
+        business: { name: "My IT Business", phone: "", email: "", address: "", prefix: "INV-" },
         clients: [],
         quotations: [],
-        products: [{ id: 1, name: "CCTV Installation", price: 5000 }, { id: 2, name: "Router Setup", price: 1500 }, { id: 3, name: "Network Cabling", price: 3000 }],
+        products: [],  // Empty product catalog - user will add their own
         expenses: [],
-        settings: { lastInvoice: 1001, lastQuote: 501, password: "admin123" }  // Default hidden
+        settings: { lastInvoice: 1001, lastQuote: 501, password: "admin9522" }  // Default password (hidden from user)
     };
     let loggedIn = false;
     let chart = null;
@@ -192,17 +196,36 @@
     const { jsPDF } = window.jspdf;
 
     // Load/Save
-    function loadData() { let s = localStorage.getItem("itpartner_green"); if(s) appData = JSON.parse(s); else initSample(); renderProducts(); renderExpenses(); renderQuotes(); renderClients(); updateDashboard(); }
+    function loadData() { 
+        let s = localStorage.getItem("itpartner_green"); 
+        if(s) appData = JSON.parse(s); 
+        else saveAll();
+        renderProducts(); 
+        renderExpenses(); 
+        renderQuotes(); 
+        renderClients(); 
+        updateDashboard(); 
+    }
     function saveAll() { localStorage.setItem("itpartner_green", JSON.stringify(appData)); }
-    function initSample() { appData.clients = [{ id: 1001, invoiceNo: "INV-1001", name: "Demo Client", phone: "01700000000", address: "Dhaka", date: new Date().toISOString().split('T')[0], items: [{ name: "CCTV Setup", qty: 1, price: 5000, total: 5000 }], total: 5000, received: 2000, due: 3000, status: "Pending", payments: [{ amount: 2000, date: new Date() }] }]; saveAll(); }
 
     // Auto-save product to catalog
-    function autoSaveProduct(name, price) { if(!name || name.trim()==="") return; let exist = appData.products.find(p=>p.name.toLowerCase()===name.toLowerCase()); if(!exist && name.trim()) { appData.products.push({ id: Date.now(), name: name.trim(), price: price || 0 }); saveAll(); renderProducts(); } }
+    function autoSaveProduct(name, price) { 
+        if(!name || name.trim()==="") return; 
+        let exist = appData.products.find(p=>p.name.toLowerCase()===name.toLowerCase()); 
+        if(!exist && name.trim()) { 
+            appData.products.push({ id: Date.now(), name: name.trim(), price: price || 0 }); 
+            saveAll(); 
+            renderProducts(); 
+        } 
+    }
 
     // Products
-    function renderProducts() { document.getElementById("productsList").innerHTML = appData.products.map(p=>`<div class="flex-between" style="background:#f5f5f5; padding:10px; border-radius:16px; margin-bottom:8px;"><span><strong>${p.name}</strong> - ৳${p.price}</span><button class="btn-outline-green" style="width:auto; padding:4px 12px;" onclick="deleteProduct(${p.id})">Del</button></div>`).join(""); }
-    function showAddProductModal() { let n=prompt("Service Name"); let p=parseFloat(prompt("Price")); if(n&&p) { appData.products.push({ id:Date.now(), name:n, price:p }); saveAll(); renderProducts(); showToast("Added"); } }
-    function deleteProduct(id) { appData.products=appData.products.filter(p=>p.id!==id); saveAll(); renderProducts(); }
+    function renderProducts() { 
+        document.getElementById("productsList").innerHTML = appData.products.map(p=>`<div class="flex-between" style="background:#f5f5f5; padding:10px; border-radius:16px; margin-bottom:8px;"><span><strong>${p.name}</strong> - ৳${p.price}</span><button class="btn-outline-green" style="width:auto; padding:4px 12px;" onclick="deleteProduct(${p.id})">Del</button></div>`).join(""); 
+        if(appData.products.length === 0) document.getElementById("productsList").innerHTML = "<p style='text-align:center; color:#999; padding:20px;'>No services added yet. Click + Add to create your service catalog.</p>";
+    }
+    function showAddProductModal(){ let n=prompt("Service Name"); let p=parseFloat(prompt("Price (৳)")); if(n&&p){ appData.products.push({ id:Date.now(), name:n, price:p }); saveAll(); renderProducts(); showToast("Service added to catalog"); } }
+    function deleteProduct(id){ appData.products=appData.products.filter(p=>p.id!==id); saveAll(); renderProducts(); }
 
     // Quotation with product search
     function addQuoteProductRow() {
@@ -232,7 +255,10 @@
         let newQ={ id:Date.now(), quoteNo:`QU-${appData.settings.lastQuote++}`, name, phone:document.getElementById("qPhone").value, address:document.getElementById("qAddress").value, items, total, terms:document.getElementById("qTerms").value, date:new Date().toISOString().split('T')[0] };
         appData.quotations.unshift(newQ); saveAll(); renderQuotes(); generateQuotePDF(newQ); showToast("Quotation saved");
     }
-    function renderQuotes() { document.getElementById("recentQuotes").innerHTML = appData.quotations.slice(0,8).map(q=>`<div class="history-item" onclick="viewQuote(${q.id})"><div class="flex-between"><span>${q.quoteNo} - ${q.name}</span><span>${q.total}৳</span></div></div>`).join(""); }
+    function renderQuotes() { 
+        document.getElementById("recentQuotes").innerHTML = appData.quotations.slice(0,8).map(q=>`<div class="history-item" onclick="viewQuote(${q.id})"><div class="flex-between"><span>${q.quoteNo} - ${q.name}</span><span>${q.total}৳</span></div></div>`).join("");
+        if(appData.quotations.length === 0) document.getElementById("recentQuotes").innerHTML = "<p style='text-align:center; color:#999; padding:20px;'>No quotations yet</p>";
+    }
     function viewQuote(id){ let q=appData.quotations.find(q=>q.id===id); if(q) generateQuotePDF(q); }
     function clearQuote(){ document.getElementById("qName").value=""; document.getElementById("qPhone").value=""; document.getElementById("qAddress").value=""; document.getElementById("quoteProducts").innerHTML=""; document.getElementById("quoteTotal").innerText="0"; document.getElementById("qTerms").value=""; addQuoteProductRow(); }
     function convertQuoteToJob(){
@@ -240,7 +266,7 @@
         document.getElementById("jPhone").value=document.getElementById("qPhone").value;
         document.getElementById("jAddress").value=document.getElementById("qAddress").value;
         document.getElementById("jobProducts").innerHTML="";
-        document.querySelectorAll("#quoteProducts .product-row").forEach(r=>{ let n=r.querySelector(".qName")?.value; if(n){ let q=r.querySelector(".qQty")?.value||1; let p=r.querySelector(".qPrice")?.value||0; let rid="jr"+Date.now()+Math.random(); document.getElementById("jobProducts").insertAdjacentHTML("beforeend",`<div class="product-row"><input type="text" class="jName" value="${n}" readonly style="background:#e8f5e9;"><input type="number" class="jQty" value="${q}" style="width:70px;" onchange="calcJobTotal()"><input type="number" class="jPrice" value="${p}" style="width:90px;" onchange="calcJobTotal()"><button class="remove-btn" onclick="this.parentElement.remove(); calcJobTotal();">✖</button></div>`); } });
+        document.querySelectorAll("#quoteProducts .product-row").forEach(r=>{ let n=r.querySelector(".qName")?.value; if(n){ let q=r.querySelector(".qQty")?.value||1; let p=r.querySelector(".qPrice")?.value||0; document.getElementById("jobProducts").insertAdjacentHTML("beforeend",`<div class="product-row"><input type="text" class="jName" value="${n}" readonly style="background:#e8f5e9;"><input type="number" class="jQty" value="${q}" style="width:70px;" onchange="calcJobTotal()"><input type="number" class="jPrice" value="${p}" style="width:90px;" onchange="calcJobTotal()"><button class="remove-btn" onclick="this.parentElement.remove(); calcJobTotal();">✖</button></div>`); } });
         calcJobTotal(); navigateTo('jobPage'); showToast("Copied to job");
     }
 
@@ -270,11 +296,14 @@
     function clearJobForm(){ document.getElementById("jName").value=""; document.getElementById("jPhone").value=""; document.getElementById("jAddress").value=""; document.getElementById("jobProducts").innerHTML=""; document.getElementById("jTotal").value=""; document.getElementById("jReceived").value="0"; calcJobDue(); addJobProductRow(); }
 
     // Clients
-    function renderClients(){ document.getElementById("clientsList").innerHTML=appData.clients.map(c=>`<div class="card" style="cursor:pointer; border-left:4px solid ${c.due>0?'#d32f2f':'#2e7d32'}" onclick="openClient(${c.id})"><div class="flex-between"><div><strong>${c.name}</strong><br><small>${c.phone}</small><br><small>${c.invoiceNo}</small></div><div><strong>${c.total}৳</strong><br><span style="color:#d32f2f">Due: ${c.due}৳</span></div></div></div>`).join(""); }
+    function renderClients(){ 
+        document.getElementById("clientsList").innerHTML=appData.clients.map(c=>`<div class="card" style="cursor:pointer; border-left:4px solid ${c.due>0?'#d32f2f':'#2e7d32'}" onclick="openClient(${c.id})"><div class="flex-between"><div><strong>${c.name}</strong><br><small>${c.phone}</small><br><small>${c.invoiceNo}</small></div><div><strong>${c.total}৳</strong><br><span style="color:#d32f2f">Due: ${c.due}৳</span></div></div></div>`).join("");
+        if(appData.clients.length === 0) document.getElementById("clientsList").innerHTML = "<p style='text-align:center; color:#999; padding:40px;'>No clients yet. Create your first job to get started.</p>";
+    }
     function filterClients(){ let q=document.getElementById("searchClient").value.toLowerCase(); let f=appData.clients.filter(c=>c.name.toLowerCase().includes(q)||c.phone.includes(q)); document.getElementById("clientsList").innerHTML=f.map(c=>`<div class="card" onclick="openClient(${c.id})"><div class="flex-between"><div><strong>${c.name}</strong><br>${c.phone}</div><div>${c.total}৳<br>Due: ${c.due}৳</div></div></div>`).join(""); }
     function openClient(id){ let c=appData.clients.find(x=>x.id===id); if(!c) return; let modal=document.createElement("div"); modal.className="modal-overlay"; modal.style.display="flex"; modal.innerHTML=`<div class="modal-card"><div class="modal-header"><h3>👤 ${c.name}</h3><i class="fas fa-times" onclick="this.closest('.modal-overlay').remove()"></i></div><div class="modal-body"><p><strong>Invoice:</strong> ${c.invoiceNo}</p><p><strong>Phone:</strong> ${c.phone}</p><p><strong>Address:</strong> ${c.address||'N/A'}</p><p><strong>Date:</strong> ${c.date} | Due: ${c.dueDate||'N/A'}</p><p><strong>Status:</strong> <span class="badge badge-pending">${c.status}</span></p><h4>Items</h4>${c.items.map(i=>`<div>${i.name} - ${i.qty} x ${i.price} = ${i.total}৳</div>`).join('')}<div class="flex-between"><strong>Total: ${c.total}৳</strong><strong>Paid: ${c.received}৳</strong><strong style="color:#d32f2f">Due: ${c.due}৳</strong></div><h4>Payments</h4>${c.payments.map(p=>`<div>${new Date(p.date).toLocaleDateString()} : ${p.amount}৳</div>`).join('')||'No payments'}<div class="grid-2" style="margin-top:15px;"><button class="btn-green" onclick="addPayment(${c.id})">➕ Add Payment</button><button class="btn-outline-green" onclick="window.open('https://wa.me/${c.phone}?text=Invoice ${c.invoiceNo} Total: ${c.total}৳ Due: ${c.due}৳')">💬 WhatsApp</button><button class="btn-outline-green" onclick="reprintJob(${c.id})">🖨️ Reprint</button><button class="btn-outline-green" onclick="deleteClient(${c.id})">🗑️ Delete</button></div></div></div>`; document.body.appendChild(modal); }
-    function addPayment(id){ let amt=parseFloat(prompt("Payment amount:")); if(amt){ let c=appData.clients.find(x=>x.id===id); c.received+=amt; c.due=c.total-c.received; c.payments.push({amount:amt, date:new Date()}); if(c.due===0) c.status="Complete"; saveAll(); renderClients(); updateDashboard(); showToast("Payment added"); location.reload(); } }
-    function deleteClient(id){ if(confirm("Delete client?")){ appData.clients=appData.clients.filter(x=>x.id!==id); saveAll(); renderClients(); updateDashboard(); showToast("Deleted"); } }
+    function addPayment(id){ let amt=parseFloat(prompt("Payment amount:")); if(amt){ let c=appData.clients.find(x=>x.id===id); c.received+=amt; c.due=c.total-c.received; c.payments.push({amount:amt, date:new Date()}); if(c.due===0) c.status="Complete"; saveAll(); renderClients(); updateDashboard(); showToast("Payment recorded"); location.reload(); } }
+    function deleteClient(id){ if(confirm("Delete this client permanently?")){ appData.clients=appData.clients.filter(x=>x.id!==id); saveAll(); renderClients(); updateDashboard(); showToast("Client deleted"); } }
     function reprintJob(id){ let j=appData.clients.find(x=>x.id===id); if(j) generateInvoicePDF(j); }
 
     // PDF
@@ -297,7 +326,7 @@
 
     // Expenses
     function addExpense(){ let d=document.getElementById("expDesc").value; let a=parseFloat(document.getElementById("expAmount").value); if(d&&a){ appData.expenses.push({id:Date.now(), desc:d, amt:a, date:new Date()}); saveAll(); renderExpenses(); showToast("Expense added"); document.getElementById("expDesc").value=""; document.getElementById("expAmount").value=""; } }
-    function renderExpenses(){ document.getElementById("expensesList").innerHTML=appData.expenses.slice(-8).reverse().map(e=>`<div class="flex-between"><span>${e.desc}</span><span>${e.amt}৳</span></div>`).join("")||"<p>No expenses</p>"; }
+    function renderExpenses(){ document.getElementById("expensesList").innerHTML=appData.expenses.slice(-8).reverse().map(e=>`<div class="flex-between"><span>${e.desc}</span><span>${e.amt}৳</span></div>`).join("")||"<p style='color:#999;'>No expenses recorded</p>"; }
 
     // Dashboard
     function updateDashboard(){
@@ -308,24 +337,73 @@
         let last7=[...Array(7)].map((_,i)=>{let d=new Date(); d.setDate(d.getDate()-i); return d.toISOString().split('T')[0];}).reverse();
         let data=last7.map(d=>appData.clients.filter(j=>j.date===d).reduce((s,j)=>s+(j.received||0),0));
         if(chart) chart.destroy(); let ctx=document.getElementById("revenueChart").getContext("2d"); chart=new Chart(ctx,{type:'line',data:{labels:last7.map(d=>d.slice(5)), datasets:[{label:'Revenue',data,borderColor:'#2e7d32',tension:0.3,fill:true,backgroundColor:'rgba(46,125,50,0.05)'}]},options:{responsive:true,plugins:{legend:{display:false}}}});
-        let svc={}; appData.clients.forEach(j=>{j.items.forEach(i=>{svc[i.name]=(svc[i.name]||0)+(i.qty||1);});}); let top=Object.entries(svc).sort((a,b)=>b[1]-a[1]).slice(0,5); document.getElementById("topServices").innerHTML=top.map(([n,c])=>`<div class="flex-between"><span>${n}</span><span>${c} times</span></div>`).join("")||"<p>No data</p>";
+        let svc={}; appData.clients.forEach(j=>{j.items.forEach(i=>{svc[i.name]=(svc[i.name]||0)+(i.qty||1);});}); let top=Object.entries(svc).sort((a,b)=>b[1]-a[1]).slice(0,5); document.getElementById("topServices").innerHTML=top.map(([n,c])=>`<div class="flex-between"><span>${n}</span><span>${c} times</span></div>`).join("")||"<p>No data yet</p>";
     }
     function setReportType(t,el){ currentReport=t; document.querySelectorAll(".report-tabs .tab").forEach(tab=>tab.classList.remove("active")); el.classList.add("active"); updateDashboard(); }
 
     // Settings & Profile
     function saveBusinessSettings(){ appData.business.name=document.getElementById("setBusinessName").value; appData.business.phone=document.getElementById("setPhone").value; appData.business.email=document.getElementById("setEmail").value; appData.business.address=document.getElementById("setAddress").value; appData.business.prefix=document.getElementById("setPrefix").value||"INV-"; saveAll(); showToast("Settings saved"); }
-    function changePassword(){ let old=document.getElementById("oldPass").value; let newp=document.getElementById("newPass").value; if(old===appData.settings.password){ appData.settings.password=newp; saveAll(); showToast("Password changed"); document.getElementById("oldPass").value=""; document.getElementById("newPass").value=""; } else alert("Current password wrong"); }
-    function openProfileModal(){ let modal=document.createElement("div"); modal.className="modal-overlay"; modal.style.display="flex"; modal.innerHTML=`<div class="modal-card"><div class="modal-header"><h3>🏪 Business Profile</h3><i class="fas fa-times" onclick="this.closest('.modal-overlay').remove()"></i></div><div class="modal-body"><input type="text" id="editBizName" placeholder="Business Name" value="${appData.business.name}"><input type="tel" id="editBizPhone" placeholder="Phone" value="${appData.business.phone}"><input type="email" id="editBizEmail" placeholder="Email" value="${appData.business.email}"><input type="text" id="editBizAddress" placeholder="Address" value="${appData.business.address}"><div style="text-align:center; margin:10px 0;"><label style="background:#e8f5e9; padding:8px; border-radius:20px; display:inline-block;"><i class="fas fa-image"></i> Logo URL <input type="text" id="editLogo" placeholder="Logo URL" style="width:200px;"></label></div><button class="btn-green" onclick="saveProfileFromModal()">Save Changes</button></div></div>`; document.body.appendChild(modal); document.getElementById("editBizName").focus(); }
-    function saveProfileFromModal(){ appData.business.name=document.getElementById("editBizName").value; appData.business.phone=document.getElementById("editBizPhone").value; appData.business.email=document.getElementById("editBizEmail").value; appData.business.address=document.getElementById("editBizAddress").value; saveAll(); showToast("Profile updated"); document.querySelector(".modal-overlay")?.remove(); }
+    function changePassword(){ let old=document.getElementById("oldPass").value; let newp=document.getElementById("newPass").value; if(old===appData.settings.password){ appData.settings.password=newp; saveAll(); showToast("Password changed successfully"); document.getElementById("oldPass").value=""; document.getElementById("newPass").value=""; } else alert("Current password is incorrect"); }
+    function openProfileModal(){ 
+        let modal=document.createElement("div"); modal.className="modal-overlay"; modal.style.display="flex"; 
+        modal.innerHTML=`<div class="modal-card"><div class="modal-header"><h3>🏪 Business Profile</h3><i class="fas fa-times" onclick="this.closest('.modal-overlay').remove()"></i></div><div class="modal-body"><input type="text" id="editBizName" placeholder="Business Name" value="${appData.business.name}"><input type="tel" id="editBizPhone" placeholder="Phone" value="${appData.business.phone}"><input type="email" id="editBizEmail" placeholder="Email" value="${appData.business.email}"><input type="text" id="editBizAddress" placeholder="Address" value="${appData.business.address}"><button class="btn-green" onclick="saveProfileFromModal()">Save Changes</button></div></div>`; 
+        document.body.appendChild(modal); document.getElementById("editBizName").focus(); 
+    }
+    function saveProfileFromModal(){ 
+        appData.business.name=document.getElementById("editBizName").value; 
+        appData.business.phone=document.getElementById("editBizPhone").value; 
+        appData.business.email=document.getElementById("editBizEmail").value; 
+        appData.business.address=document.getElementById("editBizAddress").value; 
+        saveAll(); showToast("Profile updated"); document.querySelector(".modal-overlay")?.remove(); 
+    }
 
-    function exportBackup(){ let a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(appData)])); a.download=`backup_${Date.now()}.json`; a.click(); showToast("Backup exported"); }
+    function exportBackup(){ let a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(appData)])); a.download=`itpartner_backup_${Date.now()}.json`; a.click(); showToast("Backup exported"); }
     function importBackup(e){ let file=e.target.files[0]; if(file){ let r=new FileReader(); r.onload=ev=>{ appData=JSON.parse(ev.target.result); saveAll(); showToast("Restored! Reloading..."); setTimeout(()=>location.reload(),1000); }; r.readAsText(file); } }
     function openBackupMenu(){ if(confirm("Export full backup?")) exportBackup(); }
     function navigateTo(page,el){ document.querySelectorAll(".page-section").forEach(p=>p.classList.remove("active-page")); document.getElementById(page).classList.add("active-page"); if(el){ document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active")); el.classList.add("active"); } if(page==="clientsPage") renderClients(); if(page==="settingsPage"){ document.getElementById("setBusinessName").value=appData.business.name; document.getElementById("setPhone").value=appData.business.phone; document.getElementById("setEmail").value=appData.business.email; document.getElementById("setAddress").value=appData.business.address; document.getElementById("setPrefix").value=appData.business.prefix; } }
     function showToast(m){ let t=document.createElement("div"); t.className="toast"; t.innerText=m; document.body.appendChild(t); setTimeout(()=>t.remove(),2000); }
-    function doLogin(){ let p=document.getElementById("loginPass").value; if(p===appData.settings.password){ loggedIn=true; localStorage.setItem("green_logged","true"); document.getElementById("loginModal").style.display="none"; loadData(); updateDashboard(); showToast("Welcome!"); } else document.getElementById("loginErr").innerText="Wrong password"; }
-    let sess=localStorage.getItem("green_logged"); if(sess==="true"){ loggedIn=true; document.getElementById("loginModal").style.display="none"; loadData(); updateDashboard(); } else { addQuoteProductRow(); addJobProductRow(); }
-    window.navigateTo=navigateTo; window.setReportType=setReportType; window.addQuoteProductRow=addQuoteProductRow; window.addJobProductRow=addJobProductRow; window.calcQuoteTotal=calcQuoteTotal; window.calcJobTotal=calcJobTotal; window.calcJobDue=calcJobDue; window.saveQuotation=saveQuotation; window.clearQuote=clearQuote; window.convertQuoteToJob=convertQuoteToJob; window.saveJob=saveJob; window.openClient=openClient; window.addPayment=addPayment; window.deleteClient=deleteClient; window.reprintJob=reprintJob; window.addExpense=addExpense; window.saveBusinessSettings=saveBusinessSettings; window.changePassword=changePassword; window.exportBackup=exportBackup; window.importBackup=importBackup; window.openBackupMenu=openBackupMenu; window.openProfileModal=openProfileModal; window.saveProfileFromModal=saveProfileFromModal; window.showAddProductModal=showAddProductModal; window.deleteProduct=deleteProduct; window.viewQuote=viewQuote; window.doLogin=doLogin; window.showQuoteSuggest=showQuoteSuggest; window.selectQuoteProduct=selectQuoteProduct; window.showJobSuggest=showJobSuggest; window.selectJobProduct=selectJobProduct;
+    function doLogin(){ 
+        let p = document.getElementById("loginPass").value; 
+        if(p === appData.settings.password){ 
+            loggedIn = true; 
+            localStorage.setItem("green_logged","true"); 
+            document.getElementById("loginModal").style.display = "none"; 
+            loadData(); 
+            updateDashboard(); 
+            showToast("Welcome to IT Partner!"); 
+            // Activate default active nav
+            document.querySelectorAll(".nav-item")[0].classList.add("active");
+            document.getElementById("dashboardPage").classList.add("active-page");
+        } else { 
+            document.getElementById("loginErr").innerText = "Wrong password. Access denied."; 
+        } 
+    }
+    
+    // Check if already logged in
+    let sess = localStorage.getItem("green_logged"); 
+    if(sess === "true"){ 
+        loggedIn = true; 
+        document.getElementById("loginModal").style.display = "none"; 
+        loadData(); 
+        updateDashboard();
+        document.querySelectorAll(".nav-item")[0].classList.add("active");
+        document.getElementById("dashboardPage").classList.add("active-page");
+    } else { 
+        // Show login and initialize empty rows
+        addQuoteProductRow(); 
+        addJobProductRow(); 
+    }
+    
+    // Expose global functions
+    window.navigateTo=navigateTo; window.setReportType=setReportType; window.addQuoteProductRow=addQuoteProductRow; window.addJobProductRow=addJobProductRow; 
+    window.calcQuoteTotal=calcQuoteTotal; window.calcJobTotal=calcJobTotal; window.calcJobDue=calcJobDue; window.saveQuotation=saveQuotation; 
+    window.clearQuote=clearQuote; window.convertQuoteToJob=convertQuoteToJob; window.saveJob=saveJob; window.openClient=openClient; 
+    window.addPayment=addPayment; window.deleteClient=deleteClient; window.reprintJob=reprintJob; window.addExpense=addExpense; 
+    window.saveBusinessSettings=saveBusinessSettings; window.changePassword=changePassword; window.exportBackup=exportBackup; 
+    window.importBackup=importBackup; window.openBackupMenu=openBackupMenu; window.openProfileModal=openProfileModal; 
+    window.saveProfileFromModal=saveProfileFromModal; window.showAddProductModal=showAddProductModal; window.deleteProduct=deleteProduct; 
+    window.viewQuote=viewQuote; window.doLogin=doLogin; window.showQuoteSuggest=showQuoteSuggest; window.selectQuoteProduct=selectQuoteProduct; 
+    window.showJobSuggest=showJobSuggest; window.selectJobProduct=selectJobProduct;
 </script>
 </body>
 </html>
