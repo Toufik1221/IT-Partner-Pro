@@ -1,825 +1,331 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <meta name="theme-color" content="#0d9488">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>IT Partner | মোবাইল সার্ভিস ম্যানেজমেন্ট</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f5f7fb;
-      overflow-x: hidden;
-    }
-    
-    body.dark {
-      background: #0f172a;
-      color: #e2e8f0;
-    }
-    
-    /* মোবাইল সাইডবার */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -280px;
-      width: 280px;
-      height: 100vh;
-      background: white;
-      z-index: 1000;
-      transition: left 0.3s ease;
-      box-shadow: 2px 0 20px rgba(0,0,0,0.1);
-      overflow-y: auto;
-    }
-    
-    body.dark .sidebar {
-      background: #1e293b;
-    }
-    
-    .sidebar.open {
-      left: 0;
-    }
-    
-    .sidebar-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 999;
-      display: none;
-    }
-    
-    .sidebar-overlay.open {
-      display: block;
-    }
-    
-    .sidebar-header {
-      padding: 24px 20px;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    body.dark .sidebar-header {
-      border-bottom-color: #334155;
-    }
-    
-    .sidebar-header i {
-      font-size: 28px;
-      color: #0d9488;
-    }
-    
-    .sidebar-header h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #0f766e, #14b8a6);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 14px 20px;
-      margin: 4px 12px;
-      border-radius: 14px;
-      cursor: pointer;
-      transition: 0.2s;
-      font-weight: 500;
-      color: #334155;
-    }
-    
-    body.dark .nav-item {
-      color: #cbd5e1;
-    }
-    
-    .nav-item.active {
-      background: #0d948815;
-      color: #0d9488;
-    }
-    
-    body.dark .nav-item.active {
-      background: #0d948830;
-      color: #2dd4bf;
-    }
-    
-    /* মেইন কন্টেন্ট */
-    .main-content {
-      min-height: 100vh;
-      padding: 16px;
-      padding-bottom: 80px;
-    }
-    
-    /* টপবার */
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      background: white;
-      padding: 12px 16px;
-      border-radius: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    
-    body.dark .topbar {
-      background: #1e293b;
-    }
-    
-    .menu-toggle {
-      font-size: 1.5rem;
-      cursor: pointer;
-      background: none;
-      border: none;
-      color: #0d9488;
-    }
-    
-    .page-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #0f766e, #0d9488);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    
-    .btn-primary {
-      background: #0d9488;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 30px;
-      color: white;
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 2px 8px rgba(13,148,136,0.3);
-    }
-    
-    .btn-primary:active {
-      transform: scale(0.97);
-    }
-    
-    .btn-secondary {
-      background: #64748b;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 30px;
-      color: white;
-      font-weight: 500;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-    
-    /* কার্ড ডিজাইন */
-    .card {
-      background: white;
-      border-radius: 20px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      border: 1px solid #eef2f6;
-    }
-    
-    body.dark .card {
-      background: #1e293b;
-      border-color: #334155;
-    }
-    
-    /* স্ট্যাটস গ্রিড - মোবাইলে 2 কলাম */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    
-    .stat-card {
-      background: white;
-      border-radius: 20px;
-      padding: 14px;
-      text-align: center;
-      border: 1px solid #eef2f6;
-    }
-    
-    body.dark .stat-card {
-      background: #1e293b;
-      border-color: #334155;
-    }
-    
-    .stat-card i {
-      font-size: 1.6rem;
-      color: #0d9488;
-      margin-bottom: 8px;
-    }
-    
-    .stat-card h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-    
-    .stat-card p {
-      font-size: 0.75rem;
-      color: #64748b;
-    }
-    
-    /* ফর্ম এলিমেন্ট */
-    input, textarea, select {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 16px;
-      border: 1px solid #e2e8f0;
-      font-size: 0.9rem;
-      margin-bottom: 12px;
-      background: white;
-    }
-    
-    body.dark input, body.dark textarea, body.dark select {
-      background: #0f172a;
-      border-color: #334155;
-      color: white;
-    }
-    
-    input:focus, textarea:focus, select:focus {
-      outline: none;
-      border-color: #0d9488;
-    }
-    
-    /* মডাল - মোবাইল ফ্রেন্ডলি */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 2000;
-    }
-    
-    .modal.open {
-      display: flex;
-    }
-    
-    .modal-content {
-      background: white;
-      width: 100%;
-      max-height: 85vh;
-      border-radius: 24px 24px 0 0;
-      padding: 20px;
-      overflow-y: auto;
-      animation: slideUp 0.3s ease;
-    }
-    
-    body.dark .modal-content {
-      background: #1e293b;
-    }
-    
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-    
-    /* প্রোডাক্ট রো */
-    .product-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    
-    .product-row input {
-      flex: 1;
-      margin-bottom: 0;
-      font-size: 0.8rem;
-      padding: 10px;
-    }
-    
-    .product-row .removeProductBtn {
-      background: #e53e3e;
-      color: white;
-      border: none;
-      padding: 0 12px;
-      border-radius: 30px;
-      font-size: 0.8rem;
-    }
-    
-    /* টেবিল - মোবাইলে স্ক্রল */
-    .table-wrapper {
-      overflow-x: auto;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
-    
-    th, td {
-      padding: 10px 6px;
-      text-align: left;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    
-    /* টোস্ট মেসেজ */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #0d9488;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 40px;
-      z-index: 1100;
-      font-size: 0.85rem;
-      white-space: nowrap;
-      animation: fadeOut 2s forwards;
-    }
-    
-    @keyframes fadeOut {
-      0% { opacity: 1; }
-      70% { opacity: 1; }
-      100% { opacity: 0; visibility: hidden; }
-    }
-    
-    /* ব্যাজ */
-    .badge {
-      background: #0d9488;
-      color: white;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-    }
-    
-    /* ফ্লেক্স ইউটিলিটি */
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    
-    /* প্রিসেট ব্যাজ */
-    .preset-badge {
-      background: #eef2ff;
-      padding: 6px 12px;
-      border-radius: 30px;
-      font-size: 0.7rem;
-      display: inline-block;
-      margin: 4px;
-      cursor: pointer;
-    }
-    
-    .preset-badge:active {
-      background: #0d9488;
-      color: white;
-    }
-    
-    /* লগইন মডাল বিশেষ */
-    .login-container {
-      text-align: center;
-      padding: 20px 0;
-    }
-    
-    /* হেডার */
-    h2 {
-      font-size: 1.2rem;
-      margin-bottom: 12px;
-    }
-    
-    h3 {
-      font-size: 1rem;
-      margin-bottom: 8px;
-    }
-    
-    /* সার্চ বক্স */
-    .search-box {
-      margin: 12px 0;
-    }
-    
-    .search-box input {
-      margin-bottom: 0;
-      padding: 10px 14px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>IT Partner | Service Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+        body { background: #e8f5e9; padding-bottom: 70px; }
+        /* Green Theme */
+        .top-bar { background: #1b5e20; color: white; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .top-bar h2 { font-size: 1.3rem; font-weight: 600; }
+        .top-bar i { font-size: 1.3rem; cursor: pointer; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 12px 18px; border-top: 1px solid #e0e0e0; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .nav-item { text-align: center; cursor: pointer; color: #6b7280; font-size: 0.7rem; transition: 0.2s; flex: 1; }
+        .nav-item i { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+        .nav-item.active { color: #2e7d32; }
+        .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+        .page-section { display: none; }
+        .active-page { display: block; }
+        .card { background: white; border-radius: 24px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e8f5e9; }
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+        .stat-card { background: #f1f8e9; border-radius: 20px; padding: 14px; text-align: center; }
+        .stat-card i { font-size: 1.5rem; color: #2e7d32; }
+        .stat-card h3 { font-size: 1.3rem; font-weight: 700; color: #1b5e20; margin-top: 5px; }
+        .stat-card p { font-size: 0.7rem; color: #558b2f; }
+        .btn-green { background: #2e7d32; border: none; padding: 12px; border-radius: 40px; color: white; font-weight: 600; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-green:active { transform: scale(0.97); }
+        .btn-outline-green { background: transparent; border: 1px solid #2e7d32; color: #2e7d32; padding: 10px; border-radius: 40px; font-weight: 500; width: 100%; cursor: pointer; }
+        input, select, textarea { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 20px; border: 1px solid #c8e6c9; background: white; outline: none; font-size: 14px; }
+        input:focus { border-color: #2e7d32; }
+        .product-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+        .product-row input { flex: 1; margin-bottom: 0; }
+        .remove-btn { background: #d32f2f; border: none; color: white; padding: 8px 12px; border-radius: 30px; cursor: pointer; }
+        .btn-add { background: #e8f5e9; border: 1px dashed #2e7d32; color: #2e7d32; padding: 10px; border-radius: 40px; width: 100%; margin-bottom: 12px; cursor: pointer; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
+        .badge-pending { background: #fff3e0; color: #ef6c00; }
+        .badge-progress { background: #e3f2fd; color: #1565c0; }
+        .badge-complete { background: #e8f5e9; color: #2e7d32; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-card { background: white; border-radius: 28px; max-width: 500px; width: 100%; max-height: 85vh; overflow-y: auto; }
+        .modal-header { padding: 16px 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; font-weight: 600; }
+        .modal-body { padding: 20px; }
+        .history-item { background: #f5f5f5; border-radius: 16px; padding: 12px; margin-bottom: 10px; cursor: pointer; border-left: 3px solid #2e7d32; }
+        .suggestion-list { background: white; border-radius: 16px; max-height: 200px; overflow-y: auto; position: absolute; z-index: 200; width: calc(100% - 30px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .suggestion-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .suggestion-item:hover { background: #e8f5e9; }
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #2e7d32; color: white; padding: 10px 20px; border-radius: 40px; z-index: 1100; font-size: 0.8rem; animation: fadeOut 2s forwards; }
+        @keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+        .report-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: #f1f8e9; padding: 5px; border-radius: 50px; }
+        .tab { flex: 1; text-align: center; padding: 8px; border-radius: 40px; cursor: pointer; font-size: 0.8rem; font-weight: 500; }
+        .tab.active { background: #2e7d32; color: white; }
+        .avatar-sm { width: 36px; height: 36px; background: #4caf50; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; }
+    </style>
 </head>
 <body>
 
-<!-- সাইডবার ওভারলে -->
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<!-- সাইডবার মেনু -->
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <i class="fas fa-microchip"></i>
-    <h2>IT Partner</h2>
-  </div>
-  <div class="nav-item active" data-section="dashboard"><i class="fas fa-tachometer-alt"></i> ড্যাশবোর্ড</div>
-  <div class="nav-item" data-section="clients"><i class="fas fa-users"></i> ক্লায়েন্ট</div>
-  <div class="nav-item" data-section="jobs"><i class="fas fa-tasks"></i> জবস</div>
-  <div class="nav-item" data-section="invoices"><i class="fas fa-file-invoice"></i> ইনভয়েস</div>
-  <div class="nav-item" data-section="quotations"><i class="fas fa-file-signature"></i> কোটেশন</div>
-  <div class="nav-item" data-section="ledger"><i class="fas fa-book"></i> লেজার</div>
-  <div class="nav-item" data-section="profile"><i class="fas fa-user-cog"></i> প্রোফাইল</div>
-  <div class="nav-item" data-section="backup"><i class="fas fa-database"></i> ব্যাকআপ</div>
-  <div class="nav-item" id="darkModeToggle"><i class="fas fa-moon"></i> ডার্ক মোড</div>
-  <div class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> লগআউট</div>
-</div>
-
-<!-- মেইন কন্টেন্ট -->
-<div class="main-content" id="mainContent">
-  <div class="topbar">
-    <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
-    <h1 class="page-title" id="pageTitle">ড্যাশবোর্ড</h1>
-    <button class="btn-primary" id="globalAddBtn"><i class="fas fa-plus"></i> অ্যাড</button>
-  </div>
-  <div id="viewContainer"></div>
-</div>
-
-<!-- লগইন মডাল -->
-<div id="loginModal" class="modal open">
-  <div class="modal-content" style="border-radius: 24px;">
-    <div class="login-container">
-      <i class="fas fa-shield-alt" style="font-size: 48px; color: #0d9488;"></i>
-      <h2 style="margin: 15px 0;">IT Partner লগইন</h2>
-      <input type="password" id="loginPassword" placeholder="পাসওয়ার্ড দিন">
-      <p style="font-size: 0.75rem; color: #64748b;">ডিফল্ট: admin123</p>
-      <button class="btn-primary" id="submitLogin" style="width: 100%; justify-content: center;">লগইন করুন</button>
-      <div id="loginError" style="color: #e53e3e; margin-top: 12px; font-size: 0.8rem;"></div>
+<div class="top-bar">
+    <h2><i class="fas fa-microchip"></i> IT Partner</h2>
+    <div style="display: flex; gap: 15px;">
+        <i class="fas fa-cloud-upload-alt" onclick="openBackupMenu()"></i>
+        <div class="avatar-sm" onclick="openProfileModal()"><i class="fas fa-user"></i></div>
     </div>
-  </div>
+</div>
+
+<div class="container" id="mainContainer">
+    <!-- Dashboard -->
+    <div id="dashboardPage" class="page-section active-page">
+        <div class="report-tabs">
+            <div class="tab active" onclick="setReportType('daily',this)">Today</div>
+            <div class="tab" onclick="setReportType('weekly',this)">Weekly</div>
+            <div class="tab" onclick="setReportType('monthly',this)">Monthly</div>
+        </div>
+        <div class="stat-grid">
+            <div class="stat-card"><i class="fas fa-money-bill-wave"></i><h3 id="todayCash">0৳</h3><p>Today's Collection</p></div>
+            <div class="stat-card"><i class="fas fa-hand-holding-usd"></i><h3 id="todayDue">0৳</h3><p>Due Today</p></div>
+            <div class="stat-card"><i class="fas fa-clock"></i><h3 id="pendingJobs">0</h3><p>Pending Jobs</p></div>
+            <div class="stat-card"><i class="fas fa-chart-line"></i><h3 id="monthlyRev">0৳</h3><p>Monthly Revenue</p></div>
+        </div>
+        <div class="card"><canvas id="revenueChart" height="120"></canvas></div>
+        <div class="card"><h3>🏆 Top Services</h3><div id="topServices"></div></div>
+        <button class="btn-green" onclick="navigateTo('jobPage')"><i class="fas fa-plus-circle"></i> New Job Entry</button>
+    </div>
+
+    <!-- Quotation -->
+    <div id="quotePage" class="page-section">
+        <div class="card">
+            <h3 style="color:#2e7d32;">📄 New Quotation</h3>
+            <input type="text" id="qName" placeholder="Customer Name *">
+            <input type="tel" id="qPhone" placeholder="Phone *">
+            <input type="text" id="qAddress" placeholder="Address">
+            <div id="quoteProducts"></div>
+            <button class="btn-add" onclick="addQuoteProductRow()"><i class="fas fa-plus"></i> Add Product/Service</button>
+            <div class="flex-between"><strong>Total:</strong> <span id="quoteTotal">0</span>৳</div>
+            <textarea id="qTerms" placeholder="Terms & Conditions"></textarea>
+            <div class="grid-2"><button class="btn-outline-green" onclick="clearQuote()">Clear</button><button class="btn-green" onclick="saveQuotation()">Save & PDF</button></div>
+            <button class="btn-green" style="margin-top:10px; background:#388e3c;" onclick="convertQuoteToJob()"><i class="fas fa-exchange-alt"></i> Convert to Job</button>
+        </div>
+        <div class="card"><h3>Recent Quotations</h3><div id="recentQuotes"></div></div>
+    </div>
+
+    <!-- Job / Invoice -->
+    <div id="jobPage" class="page-section">
+        <div class="card">
+            <h3 style="color:#2e7d32;">🧾 New Job / Invoice</h3>
+            <input type="text" id="jName" placeholder="Customer Name *">
+            <input type="tel" id="jPhone" placeholder="Phone *">
+            <input type="text" id="jAddress" placeholder="Address *">
+            <div class="grid-2"><input type="date" id="jDate"><input type="date" id="jDueDate"></div>
+            <div id="jobProducts"></div>
+            <button class="btn-add" onclick="addJobProductRow()"><i class="fas fa-plus"></i> Add Service</button>
+            <div class="grid-2"><input type="number" id="jTotal" readonly placeholder="Total"><input type="number" id="jReceived" placeholder="Received" value="0" oninput="calcJobDue()"></div>
+            <div><strong>Due: <span id="jobDue">0</span>৳</strong></div>
+            <div class="grid-2"><button class="btn-green" onclick="saveJob(false)">💾 Save</button><button class="btn-green" onclick="saveJob(true)">💾🖨️ Save & Print</button></div>
+        </div>
+    </div>
+
+    <!-- Clients / Ledger -->
+    <div id="clientsPage" class="page-section">
+        <div class="card"><input type="text" id="searchClient" placeholder="🔍 Search by name, phone..." oninput="filterClients()"><div id="clientsList"></div></div>
+    </div>
+
+    <!-- Products & Stock -->
+    <div id="productsPage" class="page-section">
+        <div class="card"><div class="flex-between"><h3>📦 Service Catalog</h3><button class="btn-outline-green" onclick="showAddProductModal()" style="width:auto; padding:8px 16px;">+ Add</button></div><div id="productsList"></div></div>
+        <div class="card"><h3>💰 Expenses</h3><div class="grid-2"><input type="text" id="expDesc" placeholder="Description"><input type="number" id="expAmount" placeholder="Amount"></div><button class="btn-green" onclick="addExpense()">Add Expense</button><div id="expensesList"></div></div>
+    </div>
+
+    <!-- Settings -->
+    <div id="settingsPage" class="page-section">
+        <div class="card"><h3>⚙️ Business Settings</h3>
+            <input type="text" id="setBusinessName" placeholder="Business Name">
+            <input type="tel" id="setPhone" placeholder="Phone">
+            <input type="email" id="setEmail" placeholder="Email">
+            <input type="text" id="setAddress" placeholder="Address">
+            <input type="text" id="setPrefix" placeholder="Invoice Prefix (INV-)">
+            <button class="btn-green" onclick="saveBusinessSettings()">Save Settings</button>
+            <hr style="margin:15px 0;">
+            <h3>🔐 Change Password</h3>
+            <input type="password" id="oldPass" placeholder="Current Password">
+            <input type="password" id="newPass" placeholder="New Password">
+            <button class="btn-green" onclick="changePassword()">Update Password</button>
+            <hr style="margin:15px 0;">
+            <h3>💾 Backup</h3>
+            <button class="btn-outline-green" onclick="exportBackup()"><i class="fas fa-download"></i> Export Backup</button>
+            <label class="btn-outline-green" style="display:block; margin-top:10px; text-align:center;">Restore Backup<input type="file" id="restoreFile" style="display:none;" onchange="importBackup(event)"></label>
+        </div>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="navigateTo('dashboardPage',this)"><i class="fas fa-chart-line"></i><span>Dash</span></div>
+    <div class="nav-item" onclick="navigateTo('quotePage',this)"><i class="fas fa-file-invoice-dollar"></i><span>Quote</span></div>
+    <div class="nav-item" onclick="navigateTo('jobPage',this)"><i class="fas fa-briefcase"></i><span>Job</span></div>
+    <div class="nav-item" onclick="navigateTo('clientsPage',this)"><i class="fas fa-address-book"></i><span>Ledger</span></div>
+    <div class="nav-item" onclick="navigateTo('productsPage',this)"><i class="fas fa-box"></i><span>Stock</span></div>
+    <div class="nav-item" onclick="navigateTo('settingsPage',this)"><i class="fas fa-cog"></i><span>Settings</span></div>
+</nav>
+
+<!-- Login Modal - Password only, no default shown -->
+<div id="loginModal" class="modal-overlay" style="display:flex; align-items:center;">
+    <div class="modal-card">
+        <div class="modal-header"><h3>🔐 IT Partner Login</h3></div>
+        <div class="modal-body">
+            <input type="password" id="loginPass" placeholder="Enter Password">
+            <button class="btn-green" onclick="doLogin()">Login</button>
+            <div id="loginErr" style="color:red; margin-top:10px; font-size:12px;"></div>
+        </div>
+    </div>
 </div>
 
 <script>
-  // ===================== ডাটা মডেল =====================
-  let appData = {
-    profile: { name: "মোঃ রাকিব হাসান", email: "rakib@itpartner.com", phone: "+৮৮০১৭১১২৩৪৫৬৭", businessName: "IT Partner সলিউশনস", businessAddress: "২৩৫, গুলশান এভিনিউ, ঢাকা" },
-    clients: [],
-    jobs: [],
-    invoices: [],
-    quotations: [],
-    transactions: [],
-    ledger: [],
-    settings: { password: "admin123", lastInvoiceNum: 1001, lastQuotNum: 501 }
-  };
-  
-  let currentUserLogged = false;
-  let currentSection = "dashboard";
-  let currentModal = null;
+    // ===================== DATA =====================
+    let appData = {
+        business: { name: "IT Partner", phone: "", email: "", address: "", prefix: "INV-" },
+        clients: [],
+        quotations: [],
+        products: [{ id: 1, name: "CCTV Installation", price: 5000 }, { id: 2, name: "Router Setup", price: 1500 }, { id: 3, name: "Network Cabling", price: 3000 }],
+        expenses: [],
+        settings: { lastInvoice: 1001, lastQuote: 501, password: "admin123" }  // Default hidden
+    };
+    let loggedIn = false;
+    let chart = null;
+    let currentReport = "daily";
+    const { jsPDF } = window.jspdf;
 
-  // ডাটা সেভ ও লোড
-  function saveData() { localStorage.setItem("itpartner_mobile", JSON.stringify(appData)); }
-  
-  function loadData() {
-    const d = localStorage.getItem("itpartner_mobile");
-    if(d) { appData = JSON.parse(d); }
-    else { initSampleData(); }
-  }
-  
-  function initSampleData() {
-    appData.clients = [
-      { id: "c1", name: "গ্রিনফিল্ড টেক", phone: "০১৯৮৮৭৭৬৬৫৫", email: "info@greenfield.com", address: "মিরপুর-১২, ঢাকা" },
-      { id: "c2", name: "সিটি নেটওয়ার্কস", phone: "০১৭১১১২২২৩৩", email: "city@network.com", address: "বনানী, ঢাকা" }
-    ];
-    appData.quotations = [
-      { id: "q1", quoteNo: "QU-501", clientName: "গ্রিনফিল্ড টেক", clientPhone: "০১৯৮৮৭৭৬৬৫৫", clientAddress: "মিরপুর", products: [{ name: "Hikvision Camera", qty: 4, price: 3200, total: 12800 }], total: 12800, terms: "অগ্রিম ৫০%", date: "2025-04-01" }
-    ];
-    appData.jobs = [
-      { id: "j1", clientId: "c1", clientName: "গ্রিনফিল্ড টেক", phone: "০১৯৮৮৭৭৬৬৫৫", address: "মিরপুর", serviceType: "CCTV ইন্সটলেশন", date: "2025-04-02", charge: 12800, status: "completed" }
-    ];
-    appData.invoices = [
-      { id: "inv1", invoiceNo: "INV-1001", clientId: "c1", clientName: "গ্রিনফিল্ড টেক", phone: "০১৯৮৮৭৭৬৬৫৫", address: "মিরপুর", products: [{ name: "CCTV সিস্টেম", qty: 1, price: 12800, total: 12800 }], totalAmount: 12800, receivedAmount: 5000, dueAmount: 7800, date: "2025-04-03" }
-    ];
-    appData.transactions = [
-      { id: "t1", clientId: "c1", amount: 5000, date: "2025-04-03", type: "payment", note: "অগ্রিম" }
-    ];
-    appData.ledger = [
-      { id: "l1", clientId: "c1", amount: 7800, date: "2025-04-03", note: "বাকি", type: "due" }
-    ];
-    saveData();
-  }
+    // Load/Save
+    function loadData() { let s = localStorage.getItem("itpartner_green"); if(s) appData = JSON.parse(s); else initSample(); renderProducts(); renderExpenses(); renderQuotes(); renderClients(); updateDashboard(); }
+    function saveAll() { localStorage.setItem("itpartner_green", JSON.stringify(appData)); }
+    function initSample() { appData.clients = [{ id: 1001, invoiceNo: "INV-1001", name: "Demo Client", phone: "01700000000", address: "Dhaka", date: new Date().toISOString().split('T')[0], items: [{ name: "CCTV Setup", qty: 1, price: 5000, total: 5000 }], total: 5000, received: 2000, due: 3000, status: "Pending", payments: [{ amount: 2000, date: new Date() }] }]; saveAll(); }
 
-  function showToast(msg) {
-    const toast = document.createElement("div");
-    toast.className = "toast";
-    toast.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
-  }
+    // Auto-save product to catalog
+    function autoSaveProduct(name, price) { if(!name || name.trim()==="") return; let exist = appData.products.find(p=>p.name.toLowerCase()===name.toLowerCase()); if(!exist && name.trim()) { appData.products.push({ id: Date.now(), name: name.trim(), price: price || 0 }); saveAll(); renderProducts(); } }
 
-  // মডাল ফাংশন
-  function openModal(title, html, onSave) {
-    if(currentModal) currentModal.remove();
-    const modalDiv = document.createElement("div");
-    modalDiv.className = "modal";
-    modalDiv.innerHTML = `<div class="modal-content"><h3 style="margin-bottom: 16px;">${title}</h3>${html}<div style="display: flex; gap: 10px; margin-top: 20px;"><button id="modalSaveBtn" class="btn-primary">সংরক্ষণ</button><button id="modalCancelBtn" class="btn-secondary">বাতিল</button></div></div>`;
-    document.body.appendChild(modalDiv);
-    currentModal = modalDiv;
-    setTimeout(() => modalDiv.classList.add("open"), 10);
-    document.getElementById("modalCancelBtn")?.addEventListener("click", () => { modalDiv.remove(); currentModal = null; });
-    document.getElementById("modalSaveBtn")?.addEventListener("click", () => { onSave(); modalDiv.remove(); currentModal = null; renderCurrentView(); });
-  }
+    // Products
+    function renderProducts() { document.getElementById("productsList").innerHTML = appData.products.map(p=>`<div class="flex-between" style="background:#f5f5f5; padding:10px; border-radius:16px; margin-bottom:8px;"><span><strong>${p.name}</strong> - ৳${p.price}</span><button class="btn-outline-green" style="width:auto; padding:4px 12px;" onclick="deleteProduct(${p.id})">Del</button></div>`).join(""); }
+    function showAddProductModal() { let n=prompt("Service Name"); let p=parseFloat(prompt("Price")); if(n&&p) { appData.products.push({ id:Date.now(), name:n, price:p }); saveAll(); renderProducts(); showToast("Added"); } }
+    function deleteProduct(id) { appData.products=appData.products.filter(p=>p.id!==id); saveAll(); renderProducts(); }
 
-  function closeModal() { if(currentModal) currentModal.remove(); currentModal = null; }
-
-  // ===================== UI রেন্ডার =====================
-  function renderCurrentView() {
-    const container = document.getElementById("viewContainer");
-    if(!container) return;
-    if(currentSection === "dashboard") container.innerHTML = renderDashboard();
-    else if(currentSection === "clients") container.innerHTML = renderClients();
-    else if(currentSection === "jobs") container.innerHTML = renderJobs();
-    else if(currentSection === "invoices") container.innerHTML = renderInvoices();
-    else if(currentSection === "quotations") container.innerHTML = renderQuotations();
-    else if(currentSection === "ledger") container.innerHTML = renderLedger();
-    else if(currentSection === "profile") container.innerHTML = renderProfile();
-    else if(currentSection === "backup") container.innerHTML = renderBackup();
-    attachEvents();
-    
-    if(currentSection === "dashboard") {
-      setTimeout(() => {
-        const ctx = document.getElementById("incomeChart")?.getContext("2d");
-        if(ctx) new Chart(ctx, { type: 'line', data: { labels: ['সপ্তাহ ১', '২', '৩', '৪'], datasets: [{ label: 'আয়', data: [5000, 12000, 8000, 15000], borderColor: '#0d9488', tension: 0.3 }] } });
-      }, 100);
+    // Quotation with product search
+    function addQuoteProductRow() {
+        let container = document.getElementById("quoteProducts");
+        let rid = "qr"+Date.now()+Math.random();
+        container.insertAdjacentHTML("beforeend", `<div class="product-row" id="${rid}"><div style="flex:2; position:relative;"><input type="text" class="qName" placeholder="Product name..." oninput="showQuoteSuggest(this,'${rid}')" style="width:100%;"><div id="sugg_${rid}" class="suggestion-list" style="display:none;"></div></div><input type="number" class="qQty" placeholder="Qty" value="1" style="width:70px;" onchange="calcQuoteTotal()"><input type="number" class="qPrice" placeholder="Price" style="width:90px;" onchange="calcQuoteTotal()"><button class="remove-btn" onclick="this.parentElement.remove(); calcQuoteTotal();">✖</button></div>`);
+        let priceInp = document.querySelector(`#${rid} .qPrice`);
+        let nameInp = document.querySelector(`#${rid} .qName`);
+        nameInp.addEventListener('blur',()=>{ let prod=appData.products.find(p=>p.name.toLowerCase()===nameInp.value.toLowerCase()); if(prod && (!priceInp.value||priceInp.value==0)) priceInp.value=prod.price; if(nameInp.value.trim()) autoSaveProduct(nameInp.value, priceInp.value); calcQuoteTotal(); });
     }
-  }
-
-  function renderDashboard() {
-    return `
-      <div class="stats-grid">
-        <div class="stat-card"><i class="fas fa-users"></i><h2>${appData.clients.length}</h2><p>ক্লায়েন্ট</p></div>
-        <div class="stat-card"><i class="fas fa-tasks"></i><h2>${appData.jobs.length}</h2><p>জবস</p></div>
-        <div class="stat-card"><i class="fas fa-money-bill"></i><h2>৳${appData.transactions.reduce((s,t)=>s+t.amount,0)}</h2><p>মোট আয়</p></div>
-        <div class="stat-card"><i class="fas fa-hand-holding-usd"></i><h2>৳${appData.ledger.reduce((s,l)=>s+l.amount,0)}</h2><p>পাওনা</p></div>
-      </div>
-      <div class="card"><canvas id="incomeChart" height="100"></canvas></div>
-      <div class="card"><h3>সাম্প্রতিক লেনদেন</h3>${appData.transactions.slice(-3).reverse().map(t=>`<p>📅 ${t.date} - ৳${t.amount}</p>`).join("") || "<p>কোন লেনদেন নেই</p>"}</div>
-    `;
-  }
-
-  function renderClients() {
-    return `
-      <div class="flex-between"><h2>📋 ক্লায়েন্ট</h2><button class="btn-primary" id="addClientBtn"><i class="fas fa-plus"></i> যোগ</button></div>
-      <div class="search-box"><input type="text" id="searchClient" placeholder="🔍 ক্লায়েন্ট খুঁজুন..."></div>
-      <div id="clientsList">${appData.clients.map(c => `
-        <div class="card"><div class="flex-between"><h3>${c.name}</h3><div><button class="editClientBtn" data-id="${c.id}" style="background:none; border:none; color:#0d9488;"><i class="fas fa-edit"></i></button> <button class="deleteClientBtn" data-id="${c.id}" style="background:none; border:none; color:#e53e3e;"><i class="fas fa-trash"></i></button></div></div>
-        <p><i class="fas fa-phone"></i> ${c.phone}<br><i class="fas fa-map-marker-alt"></i> ${c.address}</p>
-        <details><summary><i class="fas fa-history"></i> ইতিহাস</summary>
-          <strong>জবস:</strong> ${appData.jobs.filter(j=>j.clientId===c.id).map(j=>`<p>• ${j.serviceType} - ৳${j.charge}</p>`).join("")||"<p>কোন জব নেই</p>"}
-          <button class="btn-secondary downloadHistoryBtn" data-id="${c.id}" style="margin-top:8px;"><i class="fas fa-download"></i> CSV ডাউনলোড</button>
-        </details></div>`).join("")}</div>
-    `;
-  }
-
-  function renderJobs() {
-    return `<div class="flex-between"><h2>⚙️ জবস</h2><button class="btn-primary" id="addJobBtn"><i class="fas fa-plus"></i> নতুন</button></div>
-    <div id="jobsList">${appData.jobs.map(j => `<div class="card"><div class="flex-between"><h3>${j.serviceType}</h3><span class="badge">${j.status}</span></div><p>👤 ${j.clientName}<br>📅 ${j.date}<br>💰 ৳${j.charge}</p><div><button class="editJobBtn" data-id="${j.id}" style="background:none; border:none; color:#0d9488;"><i class="fas fa-edit"></i></button> <button class="deleteJobBtn" data-id="${j.id}" style="background:none; border:none; color:#e53e3e;"><i class="fas fa-trash"></i></button></div></div>`).join("")}</div>`;
-  }
-
-  function renderInvoices() {
-    return `<div class="flex-between"><h2>🧾 ইনভয়েস</h2><button class="btn-primary" id="createInvoiceBtn"><i class="fas fa-plus"></i> নতুন</button></div>
-    <div class="search-box"><input type="text" id="searchInvoice" placeholder="🔍 ইনভয়েস খুঁজুন..."></div>
-    <div id="invoicesList">${appData.invoices.map(i => `<div class="card"><div class="flex-between"><h3>${i.invoiceNo}</h3><button class="printInvoiceBtn" data-id="${i.id}" style="background:none; border:none; color:#0d9488;"><i class="fas fa-print"></i></button></div><p>👤 ${i.clientName}<br>💰 মোট: ৳${i.totalAmount}<br><strong style="color:#e53e3e;">বাকি: ৳${i.dueAmount}</strong></p><button class="btn-secondary payInvoiceBtn" data-id="${i.id}"><i class="fas fa-money-bill"></i> পেমেন্ট নিন</button></div>`).join("")}</div>`;
-  }
-
-  function renderQuotations() {
-    return `<div class="flex-between"><h2>📄 কোটেশন</h2><button class="btn-primary" id="createQuotBtn"><i class="fas fa-plus"></i> নতুন</button></div>
-    <div id="quotsList">${appData.quotations.map(q => `<div class="card"><div class="flex-between"><h3>${q.quoteNo}</h3><div><button class="convertToJobBtn" data-id="${q.id}" style="background:#0d9488; border:none; padding:4px 10px; border-radius:20px; color:white;"><i class="fas fa-exchange-alt"></i></button> <button class="printQuotPdfBtn" data-id="${q.id}" style="background:none; border:none; color:#0d9488;"><i class="fas fa-print"></i></button></div></div><p>👤 ${q.clientName}<br>💰 মোট: ৳${q.total}</p><button class="deleteQuotBtn" data-id="${q.id}" style="background:none; border:none; color:#e53e3e;"><i class="fas fa-trash"></i> ডিলিট</button></div>`).join("")}</div>`;
-  }
-
-  function renderLedger() {
-    let html = `<h2>📒 লেজার (পাওনা)</h2>`;
-    for(let c of appData.clients) {
-      let due = appData.ledger.filter(l=>l.clientId===c.id).reduce((s,l)=>s+l.amount,0);
-      html += `<div class="card"><div class="flex-between"><h3>${c.name}</h3><strong style="color:${due>0?'#e53e3e':'#0d9488'}">৳${due}</strong></div><p><i class="fas fa-phone"></i> ${c.phone}</p><button class="addPaymentLedgerBtn" data-id="${c.id}" class="btn-secondary">পেমেন্ট নিবেন</button></div>`;
+    function showQuoteSuggest(inp, rid) {
+        let val = inp.value.toLowerCase();
+        let sugg = appData.products.filter(p=>p.name.toLowerCase().includes(val));
+        let div = document.getElementById(`sugg_${rid}`);
+        if(!div) return;
+        if(val.length<1 || sugg.length===0) { div.style.display="none"; return; }
+        div.style.display="block";
+        div.innerHTML = sugg.map(p=>`<div class="suggestion-item" onclick="selectQuoteProduct('${rid}','${p.name}',${p.price})">${p.name} - ৳${p.price}</div>`).join('');
     }
-    html += `<div class="card"><h3>সকল লেনদেন</h3>${appData.transactions.slice().reverse().map(t=>`<p>📅 ${t.date} - ৳${t.amount}</p>`).join("")}</div>`;
-    return html;
-  }
-
-  function renderProfile() {
-    return `<div class="card"><h2>প্রোফাইল</h2>
-      <input id="businessName" placeholder="দোকানের নাম" value="${appData.profile.businessName}">
-      <input id="ownerName" placeholder="মালিকের নাম" value="${appData.profile.name}">
-      <input id="businessPhone" placeholder="ফোন" value="${appData.profile.phone}">
-      <textarea id="businessAddress" placeholder="ঠিকানা">${appData.profile.businessAddress}</textarea>
-      <button class="btn-primary" id="saveProfileBtn">সেভ করুন</button>
-      <hr style="margin: 16px 0;">
-      <h3>পাসওয়ার্ড পরিবর্তন</h3>
-      <input type="password" id="newPassword" placeholder="নতুন পাসওয়ার্ড">
-      <button class="btn-primary" id="changePasswordBtn">আপডেট করুন</button></div>`;
-  }
-
-  function renderBackup() {
-    return `<div class="card"><h2>ব্যাকআপ</h2>
-      <button class="btn-primary" id="exportBackupBtn" style="width:100%; margin-bottom:12px;"><i class="fas fa-download"></i> ব্যাকআপ এক্সপোর্ট</button>
-      <input type="file" id="restoreFileInput" accept=".json">
-      <button class="btn-primary" id="importBackupBtn" style="width:100%; margin-top:12px;"><i class="fas fa-upload"></i> রিস্টোর করুন</button>
-      <p style="font-size:0.7rem; color:#e53e3e; margin-top:12px;">⚠️ রিস্টোর করলে সব ডাটা মুছে যাবে!</p></div>`;
-  }
-
-  // ===================== ইভেন্ট হ্যান্ডলার =====================
-  function attachEvents() {
-    document.getElementById("addClientBtn")?.addEventListener("click", showAddClientModal);
-    document.getElementById("addJobBtn")?.addEventListener("click", showAddJobModal);
-    document.getElementById("createInvoiceBtn")?.addEventListener("click", showAddInvoiceModal);
-    document.getElementById("createQuotBtn")?.addEventListener("click", showAddQuotationModal);
-    document.getElementById("saveProfileBtn")?.addEventListener("click", saveProfile);
-    document.getElementById("changePasswordBtn")?.addEventListener("click", changePassword);
-    document.getElementById("exportBackupBtn")?.addEventListener("click", exportBackup);
-    document.getElementById("importBackupBtn")?.addEventListener("click", importBackup);
-    document.getElementById("searchClient")?.addEventListener("input", (e) => filterClients(e.target.value));
-    document.getElementById("searchInvoice")?.addEventListener("input", (e) => filterInvoices(e.target.value));
-    
-    document.querySelectorAll(".editClientBtn").forEach(btn => btn.addEventListener("click", () => editClient(btn.dataset.id)));
-    document.querySelectorAll(".deleteClientBtn").forEach(btn => btn.addEventListener("click", () => deleteClient(btn.dataset.id)));
-    document.querySelectorAll(".downloadHistoryBtn").forEach(btn => btn.addEventListener("click", () => downloadClientHistory(btn.dataset.id)));
-    document.querySelectorAll(".editJobBtn").forEach(btn => btn.addEventListener("click", () => editJob(btn.dataset.id)));
-    document.querySelectorAll(".deleteJobBtn").forEach(btn => btn.addEventListener("click", () => deleteJob(btn.dataset.id)));
-    document.querySelectorAll(".printInvoiceBtn").forEach(btn => btn.addEventListener("click", () => printInvoicePDF(btn.dataset.id)));
-    document.querySelectorAll(".payInvoiceBtn").forEach(btn => btn.addEventListener("click", () => recordPayment(btn.dataset.id)));
-    document.querySelectorAll(".convertToJobBtn").forEach(btn => btn.addEventListener("click", () => convertQuotationToJob(btn.dataset.id)));
-    document.querySelectorAll(".printQuotPdfBtn").forEach(btn => btn.addEventListener("click", () => printQuotationPDF(btn.dataset.id)));
-    document.querySelectorAll(".deleteQuotBtn").forEach(btn => btn.addEventListener("click", () => deleteQuotation(btn.dataset.id)));
-    document.querySelectorAll(".addPaymentLedgerBtn").forEach(btn => btn.addEventListener("click", () => addLedgerPayment(btn.dataset.id)));
-  }
-
-  // ক্লায়েন্ট ফাংশন
-  function showAddClientModal() {
-    openModal("নতুন ক্লায়েন্ট", `<input id="cName" placeholder="নাম"><input id="cPhone" placeholder="মোবাইল"><input id="cEmail" placeholder="ইমেইল"><input id="cAddress" placeholder="ঠিকানা">`, () => {
-      if(document.getElementById("cName").value) {
-        appData.clients.push({ id: Date.now().toString(), name: document.getElementById("cName").value, phone: document.getElementById("cPhone").value, email: document.getElementById("cEmail").value, address: document.getElementById("cAddress").value });
-        saveData(); showToast("ক্লায়েন্ট যোগ হয়েছে");
-      }
-    });
-  }
-
-  function editClient(id) {
-    const c = appData.clients.find(c => c.id === id);
-    openModal("ক্লায়েন্ট এডিট", `<input id="cName" value="${c.name}"><input id="cPhone" value="${c.phone}"><input id="cEmail" value="${c.email || ''}"><input id="cAddress" value="${c.address}">`, () => {
-      c.name = document.getElementById("cName").value; c.phone = document.getElementById("cPhone").value; c.email = document.getElementById("cEmail").value; c.address = document.getElementById("cAddress").value;
-      saveData(); showToast("আপডেট হয়েছে");
-    });
-  }
-
-  function deleteClient(id) {
-    if(confirm("ক্লায়েন্ট ডিলিট করবেন?")) {
-      appData.clients = appData.clients.filter(c => c.id !== id);
-      appData.jobs = appData.jobs.filter(j => j.clientId !== id);
-      appData.invoices = appData.invoices.filter(i => i.clientId !== id);
-      appData.ledger = appData.ledger.filter(l => l.clientId !== id);
-      saveData(); renderCurrentView(); showToast("ডিলিট হয়েছে");
+    function selectQuoteProduct(rid, name, price) { let row=document.getElementById(rid); if(row){ row.querySelector(".qName").value=name; row.querySelector(".qPrice").value=price; document.getElementById(`sugg_${rid}`).style.display="none"; calcQuoteTotal(); } }
+    function calcQuoteTotal() { let t=0; document.querySelectorAll("#quoteProducts .product-row").forEach(r=>{ let q=parseFloat(r.querySelector(".qQty")?.value)||0; let p=parseFloat(r.querySelector(".qPrice")?.value)||0; t+=q*p; }); document.getElementById("quoteTotal").innerText=t; }
+    function saveQuotation() {
+        let name=document.getElementById("qName").value.trim(); if(!name) return alert("Customer name required");
+        let items=[]; document.querySelectorAll("#quoteProducts .product-row").forEach(r=>{ let n=r.querySelector(".qName")?.value; if(n){ let q=parseFloat(r.querySelector(".qQty")?.value)||1; let p=parseFloat(r.querySelector(".qPrice")?.value)||0; items.push({name:n, qty:q, price:p, total:q*p}); autoSaveProduct(n,p); } });
+        if(items.length===0) return alert("Add products");
+        let total=items.reduce((s,i)=>s+i.total,0);
+        let newQ={ id:Date.now(), quoteNo:`QU-${appData.settings.lastQuote++}`, name, phone:document.getElementById("qPhone").value, address:document.getElementById("qAddress").value, items, total, terms:document.getElementById("qTerms").value, date:new Date().toISOString().split('T')[0] };
+        appData.quotations.unshift(newQ); saveAll(); renderQuotes(); generateQuotePDF(newQ); showToast("Quotation saved");
     }
-  }
-
-  function filterClients(q) { document.querySelectorAll("#clientsList .card").forEach(card => { card.style.display = card.innerText.toLowerCase().includes(q.toLowerCase()) ? "block" : "none"; }); }
-  function filterInvoices(q) { document.querySelectorAll("#invoicesList .card").forEach(card => { card.style.display = card.innerText.toLowerCase().includes(q.toLowerCase()) ? "block" : "none"; }); }
-
-  function downloadClientHistory(id) {
-    const client = appData.clients.find(c => c.id === id);
-    const jobs = appData.jobs.filter(j => j.clientId === id);
-    let csv = "টাইপ,বিবরণ,তারিখ,টাকা\n";
-    jobs.forEach(j => csv += `জব,${j.serviceType},${j.date},${j.charge}\n`);
-    const blob = new Blob([csv], {type: "text/csv"});
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${client.name}_history.csv`; a.click();
-    showToast("হিস্ট্রি ডাউনলোড");
-  }
-
-  // জব ফাংশন
-  function showAddJobModal() {
-    const options = appData.clients.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
-    openModal("নতুন জব", `<select id="jobClientId">${options}</select><input id="jobService" placeholder="সেবার ধরণ"><input id="jobCharge" placeholder="মূল্য (৳)" type="number"><input id="jobDate" type="date" value="${new Date().toISOString().slice(0,10)}">`, () => {
-      const client = appData.clients.find(c => c.id === document.getElementById("jobClientId").value);
-      if(client) {
-        appData.jobs.push({ id: Date.now().toString(), clientId: client.id, clientName: client.name, phone: client.phone, address: client.address, serviceType: document.getElementById("jobService").value, date: document.getElementById("jobDate").value, charge: parseFloat(document.getElementById("jobCharge").value), status: "pending" });
-        saveData(); showToast("জব তৈরি হয়েছে");
-      }
-    });
-  }
-
-  function editJob(id) {
-    const j = appData.jobs.find(j => j.id === id);
-    openModal("জব এডিট", `<input id="jobService" value="${j.serviceType}"><input id="jobCharge" value="${j.charge}" type="number"><input id="jobDate" type="date" value="${j.date}"><select id="jobStatus"><option ${j.status==='pending'?'selected':''}>pending</option><option ${j.status==='completed'?'selected':''}>completed</option></select>`, () => {
-      j.serviceType = document.getElementById("jobService").value; j.charge = parseFloat(document.getElementById("jobCharge").value); j.date = document.getElementById("jobDate").value; j.status = document.getElementById("jobStatus").value;
-      saveData(); showToast("আপডেট হয়েছে");
-    });
-  }
-
-  function deleteJob(id) { if(confirm("জব ডিলিট?")) { appData.jobs = appData.jobs.filter(j => j.id !== id); saveData(); renderCurrentView(); showToast("ডিলিট হয়েছে"); } }
-
-  // ইনভয়েস ফাংশন
-  function showAddInvoiceModal() {
-    const options = appData.clients.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
-    openModal("নতুন ইনভয়েস", `<select id="invClientId">${options}</select><input id="invAmount" placeholder="মোট টাকা" type="number"><input id="invReceived" placeholder="প্রাপ্ত টাকা" type="number" value="0">`, () => {
-      const client = appData.clients.find(c => c.id === document.getElementById("invClientId").value);
-      if(client) {
-        const total = parseFloat(document.getElementById("invAmount").value);
-        const received = parseFloat(document.getElementById("invReceived").value) || 0;
-        appData.invoices.push({ id: Date.now().toString(), invoiceNo: `INV-${appData.settings.lastInvoiceNum++}`, clientId: client.id, clientName: client.name, phone: client.phone, address: client.address, products: [{ name: "সার্ভিস", qty: 1, price: total, total: total }], totalAmount: total, receivedAmount: received, dueAmount: total - received, date: new Date().toISOString().slice(0,10) });
-        if(received > 0) appData.transactions.push({ id: Date.now().toString(), clientId: client.id, amount: received, date: new Date().toISOString().slice(0,10), type: "payment", note: "ইনভয়েস পেমেন্ট" });
-        if(total - received > 0) appData.ledger.push({ id: Date.now().toString(), clientId: client.id, amount: total - received, date: new Date().toISOString().slice(0,10), note: "বাকি", type: "due" });
-        saveData(); showToast("ইনভয়েস তৈরি");
-      }
-    });
-  }
-
-  function recordPayment(id) {
-    const inv = appData.invoices.find(i => i.id === id);
-    const amount = prompt(`পেমেন্ট (বাকি: ৳${inv.dueAmount})`, inv.dueAmount);
-    if(amount && !isNaN(parseFloat(amount))) {
-      const pay = parseFloat(amount);
-      inv.receivedAmount += pay; inv.dueAmount -= pay;
-      appData.transactions.push({ id: Date.now().toString(), clientId: inv.clientId, amount: pay, date: new Date().toISOString().slice(0,10), type: "payment", note: `ইনভয়েস ${inv.invoiceNo}` });
-      const ledger = appData.ledger.find(l => l.clientId === inv.clientId && l.type === "due");
-      if(ledger) ledger.amount = inv.dueAmount;
-      saveData(); renderCurrentView(); showToast(`৳${pay} পেমেন্ট হয়েছে`);
+    function renderQuotes() { document.getElementById("recentQuotes").innerHTML = appData.quotations.slice(0,8).map(q=>`<div class="history-item" onclick="viewQuote(${q.id})"><div class="flex-between"><span>${q.quoteNo} - ${q.name}</span><span>${q.total}৳</span></div></div>`).join(""); }
+    function viewQuote(id){ let q=appData.quotations.find(q=>q.id===id); if(q) generateQuotePDF(q); }
+    function clearQuote(){ document.getElementById("qName").value=""; document.getElementById("qPhone").value=""; document.getElementById("qAddress").value=""; document.getElementById("quoteProducts").innerHTML=""; document.getElementById("quoteTotal").innerText="0"; document.getElementById("qTerms").value=""; addQuoteProductRow(); }
+    function convertQuoteToJob(){
+        document.getElementById("jName").value=document.getElementById("qName").value;
+        document.getElementById("jPhone").value=document.getElementById("qPhone").value;
+        document.getElementById("jAddress").value=document.getElementById("qAddress").value;
+        document.getElementById("jobProducts").innerHTML="";
+        document.querySelectorAll("#quoteProducts .product-row").forEach(r=>{ let n=r.querySelector(".qName")?.value; if(n){ let q=r.querySelector(".qQty")?.value||1; let p=r.querySelector(".qPrice")?.value||0; let rid="jr"+Date.now()+Math.random(); document.getElementById("jobProducts").insertAdjacentHTML("beforeend",`<div class="product-row"><input type="text" class="jName" value="${n}" readonly style="background:#e8f5e9;"><input type="number" class="jQty" value="${q}" style="width:70px;" onchange="calcJobTotal()"><input type="number" class="jPrice" value="${p}" style="width:90px;" onchange="calcJobTotal()"><button class="remove-btn" onclick="this.parentElement.remove(); calcJobTotal();">✖</button></div>`); } });
+        calcJobTotal(); navigateTo('jobPage'); showToast("Copied to job");
     }
-  }
 
-  async function printInvoicePDF(id) {
-    const inv = appData.invoices.find(i => i.id === id);
-    const div = document.createElement("div");
-    div.innerHTML = `<div style="padding:20px;"><h2>${appData.profile.businessName}</h2><p>${appData.profile.businessAddress}</p><h3>ইনভয়েস</h3><p>নং: ${inv.invoiceNo} | তারিখ: ${inv.date}</p><p>ক্লায়েন্ট: ${inv.clientName}<br>${inv.address}</p><table border="1" style="width:100%"><tr><th>বিবরণ</th><th>মূল্য</th></tr><tr><td>${inv.products[0].name}</td><td>৳${inv.totalAmount}</td></tr></table><p>প্রাপ্ত: ৳${inv.receivedAmount} | বাকি: ৳${inv.dueAmount}</p></div>`;
-    await html2pdf().set({ filename: `Invoice_${inv.invoiceNo}.pdf` }).from(div).save();
-    showToast("PDF ডাউনলোড");
-  }
-
-  // কোটেশন ফাংশন
-  function showAddQuotationModal() {
-    openModal("কোটেশন", `<input id="quotClient" placeholder="ক্লায়েন্ট নাম"><input id="quotPhone" placeholder="মোবাইল"><input id="quotAddress" placeholder="ঠিকানা"><input id="quotProduct" placeholder="পণ্যের নাম"><input id="quotPrice" placeholder="মূল্য (৳)" type="number"><input id="quotTerms" placeholder="শর্তাবলী" value="অগ্রিম ৫০%">`, () => {
-      const total = parseFloat(document.getElementById("quotPrice").value) || 0;
-      appData.quotations.push({ id: Date.now().toString(), quoteNo: `QU-${appData.settings.lastQuotNum++}`, clientName: document.getElementById("quotClient").value, clientPhone: document.getElementById("quotPhone").value, clientAddress: document.getElementById("quotAddress").value, products: [{ name: document.getElementById("quotProduct").value, qty: 1, price: total, total: total }], total: total, terms: document.getElementById("quotTerms").value, date: new Date().toISOString().slice(0,10) });
-      saveData(); showToast("কোটেশন তৈরি");
-    });
-  }
-
-  function convertQuotationToJob(id) {
-    const q = appData.quotations.find(q => q.id === id);
-    if(q) {
-      let client = appData.clients.find(c => c.name === q.clientName);
-      if(!client) { client = { id: Date.now().toString(), name: q.clientName, phone: q.clientPhone, address: q.clientAddress, email: "" }; appData.clients.push(client); }
-      appData.jobs.push({ id: Date.now().toString(), clientId: client.id, clientName: q.clientName, phone: q.clientPhone, address: q.clientAddress, serviceType: q.products[0]?.name || "সেবা", date: new Date().toISOString().slice(0,10), charge: q.total, status: "pending" });
-      saveData(); renderCurrentView(); showToast("জব তৈরি হয়েছে");
+    // Job with product search
+    function addJobProductRow() {
+        let container = document.getElementById("jobProducts");
+        let rid = "jr"+Date.now()+Math.random();
+        container.insertAdjacentHTML("beforeend", `<div class="product-row" id="${rid}"><div style="flex:2; position:relative;"><input type="text" class="jName" placeholder="Service..." oninput="showJobSuggest(this,'${rid}')" style="width:100%;"><div id="suggJob_${rid}" class="suggestion-list" style="display:none;"></div></div><input type="number" class="jQty" placeholder="Qty" value="1" style="width:70px;" onchange="calcJobTotal()"><input type="number" class="jPrice" placeholder="Price" style="width:90px;" onchange="calcJobTotal()"><button class="remove-btn" onclick="this.parentElement.remove(); calcJobTotal();">✖</button></div>`);
+        let priceInp = document.querySelector(`#${rid} .jPrice`);
+        let nameInp = document.querySelector(`#${rid} .jName`);
+        nameInp.addEventListener('blur',()=>{ let prod=appData.products.find(p=>p.name.toLowerCase()===nameInp.value.toLowerCase()); if(prod && (!priceInp.value||priceInp.value==0)) priceInp.value=prod.price; if(nameInp.value.trim()) autoSaveProduct(nameInp.value, priceInp.value); calcJobTotal(); });
     }
-  }
+    function showJobSuggest(inp, rid) { let val=inp.value.toLowerCase(); let sugg=appData.products.filter(p=>p.name.toLowerCase().includes(val)); let div=document.getElementById(`suggJob_${rid}`); if(!div) return; if(val.length<1||sugg.length===0){ div.style.display="none"; return; } div.style.display="block"; div.innerHTML=sugg.map(p=>`<div class="suggestion-item" onclick="selectJobProduct('${rid}','${p.name}',${p.price})">${p.name} - ৳${p.price}</div>`).join(''); }
+    function selectJobProduct(rid,name,price){ let row=document.getElementById(rid); if(row){ row.querySelector(".jName").value=name; row.querySelector(".jPrice").value=price; document.getElementById(`suggJob_${rid}`).style.display="none"; calcJobTotal(); } }
+    function calcJobTotal(){ let t=0; document.querySelectorAll("#jobProducts .product-row").forEach(r=>{ let q=parseFloat(r.querySelector(".jQty")?.value)||0; let p=parseFloat(r.querySelector(".jPrice")?.value)||0; t+=q*p; }); document.getElementById("jTotal").value=t; calcJobDue(); }
+    function calcJobDue(){ let t=parseFloat(document.getElementById("jTotal").value)||0; let r=parseFloat(document.getElementById("jReceived").value)||0; document.getElementById("jobDue").innerText=t-r; }
+    function getNextInv(){ let n=appData.settings.lastInvoice++; saveAll(); return `${appData.business.prefix}${n}`; }
+    function saveJob(print){
+        let name=document.getElementById("jName").value.trim(); if(!name) return alert("Customer name required");
+        let items=[]; document.querySelectorAll("#jobProducts .product-row").forEach(r=>{ let n=r.querySelector(".jName")?.value; if(n){ let q=parseFloat(r.querySelector(".jQty")?.value)||1; let p=parseFloat(r.querySelector(".jPrice")?.value)||0; items.push({name:n, qty:q, price:p, total:q*p}); autoSaveProduct(n,p); } });
+        if(items.length===0) return alert("Add services");
+        let total=parseFloat(document.getElementById("jTotal").value); let rec=parseFloat(document.getElementById("jReceived").value)||0;
+        let job={ id:Date.now(), invoiceNo:getNextInv(), name, phone:document.getElementById("jPhone").value, address:document.getElementById("jAddress").value, date:document.getElementById("jDate").value||new Date().toISOString().split('T')[0], dueDate:document.getElementById("jDueDate").value, items, total, received:rec, due:total-rec, status:"Pending", payments:[{amount:rec, date:new Date()}] };
+        appData.clients.unshift(job); saveAll(); renderClients(); updateDashboard(); clearJobForm(); showToast("Job saved");
+        if(print) generateInvoicePDF(job);
+    }
+    function clearJobForm(){ document.getElementById("jName").value=""; document.getElementById("jPhone").value=""; document.getElementById("jAddress").value=""; document.getElementById("jobProducts").innerHTML=""; document.getElementById("jTotal").value=""; document.getElementById("jReceived").value="0"; calcJobDue(); addJobProductRow(); }
 
-  async function printQuotationPDF(id) {
-    const q = appData.quotations.find(q => q.id === id);
-    const div = document.createElement("div");
-    div.innerHTML = `<div style="padding:20px;"><h2>${appData.profile.businessName}</h2><h3>কোটেশন</h3><p>নং: ${q.quoteNo}</p><p>ক্লায়েন্ট: ${q.clientName}<br>${q.clientAddress}</p><p>পণ্য: ${q.products[0].name}<br>মূল্য: ৳${q.total}</p><p>শর্ত: ${q.terms}</p></div>`;
-    await html2pdf().set({ filename: `Quotation_${q.quoteNo}.pdf` }).from(div).save();
-  }
+    // Clients
+    function renderClients(){ document.getElementById("clientsList").innerHTML=appData.clients.map(c=>`<div class="card" style="cursor:pointer; border-left:4px solid ${c.due>0?'#d32f2f':'#2e7d32'}" onclick="openClient(${c.id})"><div class="flex-between"><div><strong>${c.name}</strong><br><small>${c.phone}</small><br><small>${c.invoiceNo}</small></div><div><strong>${c.total}৳</strong><br><span style="color:#d32f2f">Due: ${c.due}৳</span></div></div></div>`).join(""); }
+    function filterClients(){ let q=document.getElementById("searchClient").value.toLowerCase(); let f=appData.clients.filter(c=>c.name.toLowerCase().includes(q)||c.phone.includes(q)); document.getElementById("clientsList").innerHTML=f.map(c=>`<div class="card" onclick="openClient(${c.id})"><div class="flex-between"><div><strong>${c.name}</strong><br>${c.phone}</div><div>${c.total}৳<br>Due: ${c.due}৳</div></div></div>`).join(""); }
+    function openClient(id){ let c=appData.clients.find(x=>x.id===id); if(!c) return; let modal=document.createElement("div"); modal.className="modal-overlay"; modal.style.display="flex"; modal.innerHTML=`<div class="modal-card"><div class="modal-header"><h3>👤 ${c.name}</h3><i class="fas fa-times" onclick="this.closest('.modal-overlay').remove()"></i></div><div class="modal-body"><p><strong>Invoice:</strong> ${c.invoiceNo}</p><p><strong>Phone:</strong> ${c.phone}</p><p><strong>Address:</strong> ${c.address||'N/A'}</p><p><strong>Date:</strong> ${c.date} | Due: ${c.dueDate||'N/A'}</p><p><strong>Status:</strong> <span class="badge badge-pending">${c.status}</span></p><h4>Items</h4>${c.items.map(i=>`<div>${i.name} - ${i.qty} x ${i.price} = ${i.total}৳</div>`).join('')}<div class="flex-between"><strong>Total: ${c.total}৳</strong><strong>Paid: ${c.received}৳</strong><strong style="color:#d32f2f">Due: ${c.due}৳</strong></div><h4>Payments</h4>${c.payments.map(p=>`<div>${new Date(p.date).toLocaleDateString()} : ${p.amount}৳</div>`).join('')||'No payments'}<div class="grid-2" style="margin-top:15px;"><button class="btn-green" onclick="addPayment(${c.id})">➕ Add Payment</button><button class="btn-outline-green" onclick="window.open('https://wa.me/${c.phone}?text=Invoice ${c.invoiceNo} Total: ${c.total}৳ Due: ${c.due}৳')">💬 WhatsApp</button><button class="btn-outline-green" onclick="reprintJob(${c.id})">🖨️ Reprint</button><button class="btn-outline-green" onclick="deleteClient(${c.id})">🗑️ Delete</button></div></div></div>`; document.body.appendChild(modal); }
+    function addPayment(id){ let amt=parseFloat(prompt("Payment amount:")); if(amt){ let c=appData.clients.find(x=>x.id===id); c.received+=amt; c.due=c.total-c.received; c.payments.push({amount:amt, date:new Date()}); if(c.due===0) c.status="Complete"; saveAll(); renderClients(); updateDashboard(); showToast("Payment added"); location.reload(); } }
+    function deleteClient(id){ if(confirm("Delete client?")){ appData.clients=appData.clients.filter(x=>x.id!==id); saveAll(); renderClients(); updateDashboard(); showToast("Deleted"); } }
+    function reprintJob(id){ let j=appData.clients.find(x=>x.id===id); if(j) generateInvoicePDF(j); }
 
-  function deleteQuotation(id) { if(confirm("ডিলিট?")) { appData.quotations = appData.quotations.filter(q => q.id !== id); saveData(); renderCurrentView(); showToast("ডিলিট"); } }
+    // PDF
+    function generateInvoicePDF(job){
+        const doc=new jsPDF(); doc.setFillColor(27,94,32); doc.rect(0,0,210,45,'F'); doc.setTextColor(255,255,255); doc.setFontSize(22); doc.text("TAX INVOICE",15,28);
+        doc.setTextColor(0,0,0); doc.setFontSize(11); doc.text(`${appData.business.name}`,130,20); doc.text(`Phone: ${appData.business.phone}`,130,28);
+        doc.setFontSize(11); doc.text(`Bill To: ${job.name}`,15,58); doc.text(`Phone: ${job.phone}`,15,66); if(job.address) doc.text(`Address: ${job.address}`,15,74);
+        doc.autoTable({ head:[['Service','Qty','Price','Total']], body:job.items.map(i=>[i.name,i.qty,i.price+"৳",i.total+"৳"]), startY:85, theme:'striped', headStyles:{fillColor:[46,125,50]} });
+        let y=doc.lastAutoTable.finalY+15; doc.text(`Total: ${job.total} ৳`,15,y); doc.text(`Paid: ${job.received} ৳`,15,y+8); doc.text(`Due: ${job.due} ৳`,15,y+16);
+        doc.save(`Invoice_${job.invoiceNo}.pdf`); showToast("PDF downloaded");
+    }
+    function generateQuotePDF(q){
+        const doc=new jsPDF(); doc.setFillColor(46,125,50); doc.rect(0,0,210,40,'F'); doc.setTextColor(255,255,255); doc.setFontSize(26); doc.text("QUOTATION",15,25);
+        doc.setTextColor(0,0,0); doc.setFontSize(11); doc.text(`${appData.business.name}`,130,20); doc.text(`Contact: ${appData.business.phone}`,130,28);
+        doc.text(`Customer: ${q.name}`,15,55); doc.text(`Phone: ${q.phone}`,15,62);
+        doc.autoTable({ head:[['Description','Qty','Unit Price','Amount']], body:q.items.map(i=>[i.name,i.qty,i.price+"৳",i.total+"৳"]), startY:75, theme:'striped', headStyles:{fillColor:[46,125,50]} });
+        let y=doc.lastAutoTable.finalY+15; doc.text(`Total: ${q.total} ৳`,15,y); if(q.terms) doc.text(`Terms: ${q.terms}`,15,y+10);
+        doc.save(`Quotation_${q.quoteNo}.pdf`); showToast("PDF downloaded");
+    }
 
-  function addLedgerPayment(id) { const amt = prompt("পেমেন্ট টাকা লিখুন"); if(amt) { appData.transactions.push({ id: Date.now().toString(), clientId: id, amount: parseFloat(amt), date: new Date().toISOString().slice(0,10), type: "payment", note: "ম্যানুয়াল" }); const due = appData.ledger.find(l => l.clientId === id); if(due) due.amount -= parseFloat(amt); saveData(); renderCurrentView(); showToast("পেমেন্ট যোগ"); } }
+    // Expenses
+    function addExpense(){ let d=document.getElementById("expDesc").value; let a=parseFloat(document.getElementById("expAmount").value); if(d&&a){ appData.expenses.push({id:Date.now(), desc:d, amt:a, date:new Date()}); saveAll(); renderExpenses(); showToast("Expense added"); document.getElementById("expDesc").value=""; document.getElementById("expAmount").value=""; } }
+    function renderExpenses(){ document.getElementById("expensesList").innerHTML=appData.expenses.slice(-8).reverse().map(e=>`<div class="flex-between"><span>${e.desc}</span><span>${e.amt}৳</span></div>`).join("")||"<p>No expenses</p>"; }
 
-  function saveProfile() { appData.profile.businessName = document.getElementById("businessName").value; appData.profile.name = document.getElementById("ownerName").value; appData.profile.phone = document.getElementById("businessPhone").value; appData.profile.businessAddress = document.getElementById("businessAddress").value; saveData(); showToast("প্রোফাইল সেভ"); }
-  function changePassword() { const np = document.getElementById("newPassword").value; if(np) { appData.settings.password = np; saveData(); showToast("পাসওয়ার্ড পরিবর্তিত"); } }
-  function exportBackup() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(appData)])); a.download = `backup_${Date.now()}.json`; a.click(); showToast("ব্যাকআপ তৈরি"); }
-  function importBackup() { const file = document.getElementById("restoreFileInput").files[0]; if(file) { const reader = new FileReader(); reader.onload = e => { appData = JSON.parse(e.target.result); saveData(); showToast("রিস্টোর সম্পূর্ণ"); location.reload(); }; reader.readAsText(file); } }
+    // Dashboard
+    function updateDashboard(){
+        document.getElementById("todayCash").innerText=appData.clients.filter(j=>j.date===new Date().toISOString().split('T')[0]).reduce((s,j)=>s+(j.received||0),0)+"৳";
+        document.getElementById("todayDue").innerText=appData.clients.filter(j=>j.date===new Date().toISOString().split('T')[0]).reduce((s,j)=>s+(j.due||0),0)+"৳";
+        document.getElementById("pendingJobs").innerText=appData.clients.filter(j=>j.status==="Pending"||j.status==="In Progress").length;
+        document.getElementById("monthlyRev").innerText=appData.clients.filter(j=>new Date(j.date).getMonth()===new Date().getMonth()).reduce((s,j)=>s+(j.received||0),0)+"৳";
+        let last7=[...Array(7)].map((_,i)=>{let d=new Date(); d.setDate(d.getDate()-i); return d.toISOString().split('T')[0];}).reverse();
+        let data=last7.map(d=>appData.clients.filter(j=>j.date===d).reduce((s,j)=>s+(j.received||0),0));
+        if(chart) chart.destroy(); let ctx=document.getElementById("revenueChart").getContext("2d"); chart=new Chart(ctx,{type:'line',data:{labels:last7.map(d=>d.slice(5)), datasets:[{label:'Revenue',data,borderColor:'#2e7d32',tension:0.3,fill:true,backgroundColor:'rgba(46,125,50,0.05)'}]},options:{responsive:true,plugins:{legend:{display:false}}}});
+        let svc={}; appData.clients.forEach(j=>{j.items.forEach(i=>{svc[i.name]=(svc[i.name]||0)+(i.qty||1);});}); let top=Object.entries(svc).sort((a,b)=>b[1]-a[1]).slice(0,5); document.getElementById("topServices").innerHTML=top.map(([n,c])=>`<div class="flex-between"><span>${n}</span><span>${c} times</span></div>`).join("")||"<p>No data</p>";
+    }
+    function setReportType(t,el){ currentReport=t; document.querySelectorAll(".report-tabs .tab").forEach(tab=>tab.classList.remove("active")); el.classList.add("active"); updateDashboard(); }
 
-  // নেভিগেশন ও লগইন
-  function navigateTo(section) { if(!currentUserLogged && section !== "login") return; currentSection = section; document.querySelectorAll(".nav-item[data-section]").forEach(nav => nav.classList.remove("active")); document.querySelector(`.nav-item[data-section="${section}"]`)?.classList.add("active"); renderCurrentView(); }
+    // Settings & Profile
+    function saveBusinessSettings(){ appData.business.name=document.getElementById("setBusinessName").value; appData.business.phone=document.getElementById("setPhone").value; appData.business.email=document.getElementById("setEmail").value; appData.business.address=document.getElementById("setAddress").value; appData.business.prefix=document.getElementById("setPrefix").value||"INV-"; saveAll(); showToast("Settings saved"); }
+    function changePassword(){ let old=document.getElementById("oldPass").value; let newp=document.getElementById("newPass").value; if(old===appData.settings.password){ appData.settings.password=newp; saveAll(); showToast("Password changed"); document.getElementById("oldPass").value=""; document.getElementById("newPass").value=""; } else alert("Current password wrong"); }
+    function openProfileModal(){ let modal=document.createElement("div"); modal.className="modal-overlay"; modal.style.display="flex"; modal.innerHTML=`<div class="modal-card"><div class="modal-header"><h3>🏪 Business Profile</h3><i class="fas fa-times" onclick="this.closest('.modal-overlay').remove()"></i></div><div class="modal-body"><input type="text" id="editBizName" placeholder="Business Name" value="${appData.business.name}"><input type="tel" id="editBizPhone" placeholder="Phone" value="${appData.business.phone}"><input type="email" id="editBizEmail" placeholder="Email" value="${appData.business.email}"><input type="text" id="editBizAddress" placeholder="Address" value="${appData.business.address}"><div style="text-align:center; margin:10px 0;"><label style="background:#e8f5e9; padding:8px; border-radius:20px; display:inline-block;"><i class="fas fa-image"></i> Logo URL <input type="text" id="editLogo" placeholder="Logo URL" style="width:200px;"></label></div><button class="btn-green" onclick="saveProfileFromModal()">Save Changes</button></div></div>`; document.body.appendChild(modal); document.getElementById("editBizName").focus(); }
+    function saveProfileFromModal(){ appData.business.name=document.getElementById("editBizName").value; appData.business.phone=document.getElementById("editBizPhone").value; appData.business.email=document.getElementById("editBizEmail").value; appData.business.address=document.getElementById("editBizAddress").value; saveAll(); showToast("Profile updated"); document.querySelector(".modal-overlay")?.remove(); }
 
-  document.querySelectorAll(".nav-item[data-section]").forEach(nav => { nav.addEventListener("click", () => { if(currentUserLogged) { navigateTo(nav.dataset.section); closeSidebar(); } }); });
-  document.getElementById("menuToggle")?.addEventListener("click", () => { document.getElementById("sidebar").classList.add("open"); document.getElementById("sidebarOverlay").classList.add("open"); });
-  function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("sidebarOverlay").classList.remove("open"); }
-  document.getElementById("sidebarOverlay")?.addEventListener("click", closeSidebar);
-  document.getElementById("darkModeToggle")?.addEventListener("click", () => { document.body.classList.toggle("dark"); localStorage.setItem("darkMode", document.body.classList.contains("dark")); });
-  document.getElementById("logoutBtn")?.addEventListener("click", () => { currentUserLogged = false; document.getElementById("loginModal").style.display = "flex"; showToast("লগআউট"); });
-  document.getElementById("submitLogin")?.addEventListener("click", () => { if(document.getElementById("loginPassword").value === appData.settings.password) { currentUserLogged = true; document.getElementById("loginModal").style.display = "none"; navigateTo("dashboard"); showToast("স্বাগতম!"); } else { document.getElementById("loginError").innerText = "ভুল পাসওয়ার্ড!"; } });
-  document.getElementById("globalAddBtn")?.addEventListener("click", () => { if(currentSection === "clients") showAddClientModal(); else if(currentSection === "jobs") showAddJobModal(); else if(currentSection === "invoices") showAddInvoiceModal(); else if(currentSection === "quotations") showAddQuotationModal(); else showAddClientModal(); });
-
-  if(localStorage.getItem("darkMode") === "true") document.body.classList.add("dark");
-  loadData();
+    function exportBackup(){ let a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(appData)])); a.download=`backup_${Date.now()}.json`; a.click(); showToast("Backup exported"); }
+    function importBackup(e){ let file=e.target.files[0]; if(file){ let r=new FileReader(); r.onload=ev=>{ appData=JSON.parse(ev.target.result); saveAll(); showToast("Restored! Reloading..."); setTimeout(()=>location.reload(),1000); }; r.readAsText(file); } }
+    function openBackupMenu(){ if(confirm("Export full backup?")) exportBackup(); }
+    function navigateTo(page,el){ document.querySelectorAll(".page-section").forEach(p=>p.classList.remove("active-page")); document.getElementById(page).classList.add("active-page"); if(el){ document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active")); el.classList.add("active"); } if(page==="clientsPage") renderClients(); if(page==="settingsPage"){ document.getElementById("setBusinessName").value=appData.business.name; document.getElementById("setPhone").value=appData.business.phone; document.getElementById("setEmail").value=appData.business.email; document.getElementById("setAddress").value=appData.business.address; document.getElementById("setPrefix").value=appData.business.prefix; } }
+    function showToast(m){ let t=document.createElement("div"); t.className="toast"; t.innerText=m; document.body.appendChild(t); setTimeout(()=>t.remove(),2000); }
+    function doLogin(){ let p=document.getElementById("loginPass").value; if(p===appData.settings.password){ loggedIn=true; localStorage.setItem("green_logged","true"); document.getElementById("loginModal").style.display="none"; loadData(); updateDashboard(); showToast("Welcome!"); } else document.getElementById("loginErr").innerText="Wrong password"; }
+    let sess=localStorage.getItem("green_logged"); if(sess==="true"){ loggedIn=true; document.getElementById("loginModal").style.display="none"; loadData(); updateDashboard(); } else { addQuoteProductRow(); addJobProductRow(); }
+    window.navigateTo=navigateTo; window.setReportType=setReportType; window.addQuoteProductRow=addQuoteProductRow; window.addJobProductRow=addJobProductRow; window.calcQuoteTotal=calcQuoteTotal; window.calcJobTotal=calcJobTotal; window.calcJobDue=calcJobDue; window.saveQuotation=saveQuotation; window.clearQuote=clearQuote; window.convertQuoteToJob=convertQuoteToJob; window.saveJob=saveJob; window.openClient=openClient; window.addPayment=addPayment; window.deleteClient=deleteClient; window.reprintJob=reprintJob; window.addExpense=addExpense; window.saveBusinessSettings=saveBusinessSettings; window.changePassword=changePassword; window.exportBackup=exportBackup; window.importBackup=importBackup; window.openBackupMenu=openBackupMenu; window.openProfileModal=openProfileModal; window.saveProfileFromModal=saveProfileFromModal; window.showAddProductModal=showAddProductModal; window.deleteProduct=deleteProduct; window.viewQuote=viewQuote; window.doLogin=doLogin; window.showQuoteSuggest=showQuoteSuggest; window.selectQuoteProduct=selectQuoteProduct; window.showJobSuggest=showJobSuggest; window.selectJobProduct=selectJobProduct;
 </script>
 </body>
 </html>
